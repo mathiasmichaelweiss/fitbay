@@ -20,7 +20,7 @@ test('цель «Похудение»: норма из CALC прототипа, 
   await expect(d.getByTestId('prof-sum')).toContainText('2080');
   await expect(d.getByTestId('prof-sum')).toContainText('144г');
   await expect(d.getByTestId('prof-note')).toContainText('До 72 кг примерно 14 нед. в спокойном темпе.');
-  await d.getByRole('button', { name: 'Сохранить' }).click();
+  await d.getByRole('button', { name: 'Сохранить', exact: true }).click();
   await expect(page.getByTestId('kcal-target')).toHaveText(/^2\s?080$/);
   expect(await saved(page)).toMatchObject({ goal: 'lose', tw: 72 });
 });
@@ -33,7 +33,7 @@ test('ручные БЖУ: подставляются авто, калории �
   await d.getByLabel('Жиры, г').fill('60');
   await d.getByLabel('Углеводы, г').fill('200');
   await expect(d.getByTestId('prof-sum')).toContainText('1940');
-  await d.getByRole('button', { name: 'Сохранить' }).click();
+  await d.getByRole('button', { name: 'Сохранить', exact: true }).click();
   await expect(page.getByTestId('kcal-target')).toHaveText(/^1\s?940$/);
 });
 
@@ -43,7 +43,7 @@ test('гибкий план: дни недели, тип дня на главн�
   await expect(d.getByRole('radio', { name: 'Вручную' })).toHaveCount(0); // в гибком режиме выбора авто/вручную нет
   // все дни недели тренировочные: сегодня точно тренировка
   for (const wd of ['Вт', 'Чт', 'Сб', 'Вс']) await d.getByRole('group', { name: 'Тренировочные дни недели' }).getByRole('button', { name: wd }).click();
-  await d.getByRole('button', { name: 'Сохранить' }).click();
+  await d.getByRole('button', { name: 'Сохранить', exact: true }).click();
 
   const chip = page.getByTestId('day-type');
   await expect(chip).toHaveText('🏋️ Тренировочный день');
@@ -60,7 +60,7 @@ test('доля сожжённого и цели активности сохра�
   const d = await openProf(page);
   await d.getByRole('radio', { name: '100%' }).click();
   await d.getByLabel('Сжечь, ккал').fill('500');
-  await d.getByRole('button', { name: 'Сохранить' }).click();
+  await d.getByRole('button', { name: 'Сохранить', exact: true }).click();
   await expect(d).toBeHidden();
   expect(await saved(page)).toMatchObject({ actPct: 1, actGoal: { k: 500, m: 30 } });
 });
