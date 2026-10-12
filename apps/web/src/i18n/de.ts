@@ -30,5 +30,27 @@ export const de: Dict = {
     targetNote: 'Berechnet nach Mifflin. Später kann dein Trainer den Bedarf anpassen.',
     next: 'Weiter', back: 'Zurück', finish: 'Los geht’s',
   },
+  food: {
+    eaten: 'gegessen', left: 'übrig', over: 'über Bedarf', of: 'von',
+    p: 'Eiweiß', f: 'Fett', c: 'Kohlenhydrate', g: 'g', kcalUnit: 'kcal',
+    slot_breakfast: 'Frühstück', slot_lunch: 'Mittagessen', slot_dinner: 'Abendessen', slot_snack: 'Snack',
+    add: 'Hinzufügen', addTitle: 'Essen hinzufügen', empty: 'Noch leer',
+    modeManual: 'Manuell', modePhoto: 'Foto', modeText: 'Text',
+    aiSoon: 'Erkennung per Foto und Text kommt, sobald die KI angebunden ist.',
+    name: 'Bezeichnung', grams: 'Gewicht, g', kcal: 'Kalorien', save: 'Speichern', delete: 'Löschen',
+    prevDay: 'Vorheriger Tag', nextDay: 'Nächster Tag', todayLabel: 'Heute', yesterday: 'Gestern',
+    noTarget: 'Profil ausfüllen, um den Bedarf zu sehen',
+  },
+  ci: {
+    title: 'Befinden', mark: 'Befinden eintragen', edit: 'Ändern',
+    sleep: 'Schlaf', energy: 'Energie', stress: 'Stress', hunger: 'Hunger', pain: 'Schmerz', adh: 'Plan eingehalten',
+    low: 'schlecht', high: 'super', lowRev: 'kein', highRev: 'stark',
+    note: 'Notiz (optional)', save: 'Speichern', done: 'Eingetragen',
+  },
+  weight: {
+    current: 'Aktuell', target: 'Ziel', start: 'Start', change: 'Veränderung',
+    add: 'Gewicht eintragen', today: 'Gewicht heute, kg', save: 'Speichern', history: 'Verlauf', empty: 'Noch keine Einträge',
+    kg: 'kg', delete: 'Löschen',
+  },
   common: { soon: 'Dieser Bereich kommt bald' },
 };

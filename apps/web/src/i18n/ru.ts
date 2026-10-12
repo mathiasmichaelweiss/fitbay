@@ -27,6 +27,28 @@ export const ru = {
     targetNote: 'Расчёт по формуле Миффлина. Позже норму может настроить тренер.',
     next: 'Дальше', back: 'Назад', finish: 'Начать',
   },
+  food: {
+    eaten: 'съедено', left: 'осталось', over: 'сверх нормы', of: 'из',
+    p: 'Белки', f: 'Жиры', c: 'Углеводы', g: 'г', kcalUnit: 'ккал',
+    slot_breakfast: 'Завтрак', slot_lunch: 'Обед', slot_dinner: 'Ужин', slot_snack: 'Перекус',
+    add: 'Добавить', addTitle: 'Добавить еду', empty: 'Пока пусто',
+    modeManual: 'Вручную', modePhoto: 'Фото', modeText: 'Текст',
+    aiSoon: 'Распознавание по фото и тексту появится после подключения ИИ.',
+    name: 'Название', grams: 'Вес, г', kcal: 'Калории', save: 'Сохранить', delete: 'Удалить',
+    prevDay: 'Предыдущий день', nextDay: 'Следующий день', todayLabel: 'Сегодня', yesterday: 'Вчера',
+    noTarget: 'Заполните профиль, чтобы увидеть норму',
+  },
+  ci: {
+    title: 'Самочувствие', mark: 'Отметить самочувствие', edit: 'Изменить',
+    sleep: 'Сон', energy: 'Энергия', stress: 'Стресс', hunger: 'Голод', pain: 'Боль', adh: 'Соблюдение плана',
+    low: 'плохо', high: 'отлично', lowRev: 'нет', highRev: 'сильно',
+    note: 'Заметка (необязательно)', save: 'Сохранить', done: 'Отмечено',
+  },
+  weight: {
+    current: 'Сейчас', target: 'Цель', start: 'Старт', change: 'Изменение',
+    add: 'Записать вес', today: 'Вес сегодня, кг', save: 'Сохранить', history: 'История', empty: 'Пока нет записей',
+    kg: 'кг', delete: 'Удалить',
+  },
   common: { soon: 'Скоро здесь будет раздел' },
 };
 export type Dict = typeof ru;

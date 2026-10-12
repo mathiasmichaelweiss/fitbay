@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import './ui.css';
+export { Ring, Bar } from './Ring';
 
 type Tone = 'orange' | 'yellow' | 'teal';
 

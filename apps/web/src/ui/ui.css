@@ -37,3 +37,13 @@ button.tile { cursor: pointer; }
 .sheet { width: 100%; max-width: 480px; max-height: 85dvh; overflow-y: auto; background: var(--surface); border-radius: var(--r-lg) var(--r-lg) 0 0; padding: var(--sp-3) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom)); box-shadow: var(--shadow); }
 .sheet__grip { width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto var(--sp-3); }
 .sheet__title { margin: 0 0 var(--sp-3); font-size: var(--fs-lg); }
+
+.ring { position: relative; flex: none; }
+.ring__center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.bar { display: grid; gap: 6px; }
+.bar__head { display: flex; justify-content: space-between; gap: var(--sp-2); font-size: var(--fs-sm); }
+.bar__head > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar__nums { white-space: nowrap; }
+.bar__nums { color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar__track { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.bar__fill { height: 100%; border-radius: 4px; transition: width .4s ease; }

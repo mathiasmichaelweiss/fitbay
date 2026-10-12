@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Card, Seg, Tile } from '../ui';
 import { LANGS } from '../i18n';
 import { useNav, type CabinetTab, type ClientTab } from './store';
+import { Today } from '../screens/Today';
+import { Progress } from '../screens/Progress';
 import './nav.css';
 
 const CLIENT_TABS: { id: ClientTab; icon: string }[] = [
@@ -57,7 +59,11 @@ export function Shell() {
       )}
 
       <main className="shell__main page">
-        {SECTIONS[active].length > 0 ? (
+        {!inCabinet && tab === 'today' ? (
+          <Today />
+        ) : !inCabinet && tab === 'progress' ? (
+          <Progress />
+        ) : SECTIONS[active].length > 0 ? (
           <div className="tiles">
             {SECTIONS[active].map((k) => (
               <Tile key={k} label={t(k)} value="…" />
