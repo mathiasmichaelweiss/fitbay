@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ActiveWorkout, Checkin, Meal, Measure, Profile, Program, Recipe, Workout } from '@fitbay/shared';
-import { target, sum, type CalcProfile, type MacroSum, type Target } from '@fitbay/calc';
+import type { ActiveWorkout, ActivityEntry, Checkin, Meal, Measure, Profile, Program, Recipe, Workout } from '@fitbay/shared';
+import { target, sum, woKcal, type CalcProfile, type DayContext, type MacroSum, type Target } from '@fitbay/calc';
 import { api, type Collection } from './api';
 
 export const today = () => {
@@ -47,7 +47,8 @@ export const useMeasureOps = () => useCol<Measure>('measures');
 export function useDaySummary(date: string): { target: Target | null; eaten: MacroSum; meals: Meal[] } {
   const { data: profile } = useProfile();
   const { data: meals = [] } = useMeals(date);
-  return { target: profile ? target(profile as CalcProfile, date, { pct: profile.actPct ?? 0.5 }) : null, eaten: sum(meals), meals };
+  const ctx = useDayCtx();
+  return { target: profile ? target(profile as CalcProfile, date, ctx(date)) : null, eaten: sum(meals), meals };
 }
 export const useCheckins = () => useQuery({ queryKey: ['checkins'], queryFn: () => api.list<Checkin>('checkins') });
 
@@ -89,3 +90,30 @@ export const loadActive = async (): Promise<ActiveWorkout | null> => {
   return rest as unknown as ActiveWorkout;
 };
 export const saveActiveRemote = (a: ActiveWorkout | null) => api.putOne('active-workout', a ?? { none: true });
+
+export const useActivities = () => useQuery({ queryKey: ['activities'], queryFn: () => api.list<ActivityEntry>('activities') });
+export const useActivityOps = () => useCol<ActivityEntry>('activities');
+
+/**
+ * Контекст дня для нормы (CALC.actKcal, dayType прототипа): сожжено за день (тренировки + активности),
+ * доля сожжённого из профиля, была ли тренировка. Все экраны с нормой берут его отсюда.
+ */
+export function useDayCtx(): (day: string) => DayContext {
+  const { data: profile } = useProfile();
+  const { data: workouts = [] } = useWorkouts();
+  const { data: acts = [] } = useActivities();
+  const pct = profile?.actPct ?? 0.5;
+  return (day) => {
+    const wos = workouts.filter((w) => w.date === day);
+    const actKcal = wos.reduce((k, w) => k + (woKcal(w.start, w.end, w.items, w.kcal, profile?.w) || 0), 0) + acts.filter((a) => a.date === day).reduce((k, a) => k + (+a.kcal || 0), 0);
+    return { pct, actKcal, hasWorkout: wos.length > 0 };
+  };
+}
+/** Сожжено по дням для dayStats. */
+export function useActKcalByDay(): Record<string, number> {
+  const ctx = useDayCtx();
+  const { data: workouts = [] } = useWorkouts();
+  const { data: acts = [] } = useActivities();
+  const days = new Set([...workouts.map((w) => w.date), ...acts.map((a) => a.date)]);
+  return Object.fromEntries([...days].map((d) => [d, ctx(d).actKcal ?? 0]));
+}

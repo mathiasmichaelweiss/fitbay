@@ -5,7 +5,7 @@ import { sum, target, type CalcProfile } from '@fitbay/calc';
 import { CapsRings, RC } from '@/components/ui/rings';
 import { SheetPage } from '@/components/ui/sheet-page';
 import { cn } from '@/lib/utils';
-import { today, useMealsRange, useProfile } from '@/data/hooks';
+import { today, useDayCtx, useMealsRange, useProfile } from '@/data/hooks';
 
 /** «Календарь» прототипа (renderCal): месяц с кольцами по дням, будущие дни недоступны. */
 export function CalendarSheet({ open, day, onPick, onClose }: { open: boolean; day: string; onPick: (d: string) => void; onClose: () => void }) {
@@ -16,6 +16,7 @@ export function CalendarSheet({ open, day, onPick, onClose }: { open: boolean; d
   const first = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const { data: meals = [] } = useMealsRange(`${month}-01`, `${month}-${String(days).padStart(2, '0')}`);
   const { data: profile } = useProfile();
+  const ctx = useDayCtx();
   const td = today();
   const shift = (n: number) => {
     const d = new Date(y, m - 1 + n, 1);
@@ -43,7 +44,7 @@ export function CalendarSheet({ open, day, onPick, onClose }: { open: boolean; d
           {Array.from({ length: days }, (_, i) => {
             const ds = `${month}-${String(i + 1).padStart(2, '0')}`;
             const s = sum(meals.filter((x) => x.date === ds));
-            const tg = profile ? target(profile as unknown as CalcProfile, ds, { pct: profile.actPct ?? 0.5 }) : null;
+            const tg = profile ? target(profile as unknown as CalcProfile, ds, ctx(ds)) : null;
             const fut = ds > td;
             return (
               <button

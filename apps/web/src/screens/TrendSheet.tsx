@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { SingleToggle } from '@/components/ui/toggle-group';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
-import { shiftDay, today, useMeasureOps, useMeasures, useMealsRange, useProfile, useSaveProfile, useWeighings, useWorkouts } from '@/data/hooks';
+import { shiftDay, today, useActKcalByDay, useMeasureOps, useMeasures, useMealsRange, useProfile, useSaveProfile, useWeighings, useWorkouts } from '@/data/hooks';
 
 const GREEN = '#7BC67B';
 const c1 = (n: number) => n.toFixed(1).replace('.', ',');
@@ -24,10 +24,11 @@ export function TrendSheet({ open, onClose, date, meals }: { open: boolean; onCl
   const { data: hist = [] } = useMealsRange(shiftDay(today(), -60), today());
   const weights = useWeighings();
   const [insight, setInsight] = useState<{ prev: WeightPoint; w: number; date: string } | null>(null);
+  const actBy = useActKcalByDay();
   if (!profile) return null;
   const p = profile as unknown as CalcProfile;
   const all = [...hist.filter((m) => m.date !== date), ...meals];
-  const D = dayStats(all, p, date, weights, {}, profile.actPct ?? 0.5);
+  const D = dayStats(all, p, date, weights, actBy, profile.actPct ?? 0.5);
   const T0 = D.find((x) => x.d === date);
   const P = proj(D, today());
   const f = (n: number) => Math.round(n).toLocaleString(i18n.language);

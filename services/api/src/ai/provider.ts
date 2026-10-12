@@ -43,6 +43,8 @@ export class OpenAIProvider implements Provider {
 
 /** Типовые ответы заглушки по задачам (для AI_MOCK=1 и e2e). */
 const MOCK_DEFAULTS: Record<string, string> = {
+  'Человек описал свою активность': JSON.stringify({ items: [{ name: 'Ходьба', min: 60, km: 5, steps: 7000, kcal: 280, replaceId: null }] }),
+  'Обнови одну запись активности': JSON.stringify({ min: 70, km: 6, steps: 8200, kcal: 330 }),
   'Составь недельную программу': JSON.stringify({
     days: [
       { name: 'День 1: Верх тела', exercises: [{ id: 'Pushups', sets: 3, reps: '8-12' }, { id: 'Pullups', sets: 3, reps: '5-8' }, { id: 'Nope', sets: 3, reps: '10' }] },

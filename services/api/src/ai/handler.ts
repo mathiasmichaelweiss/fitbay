@@ -4,14 +4,14 @@ import { DynamoRepo, type Item, type Repo } from '../lib/repo';
 import { body, caller, handle, HttpError, json, type Event, type Result } from '../lib/http';
 import { communityHint, personalCorrections } from '../corrections/handler';
 import { communityHintText, personalHintText } from '../prompts/hints';
-import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt, workoutPrompt } from './prompts';
+import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt, workoutPrompt, activityPrompt, activityEditPrompt, actShotsExtra, actTextExtra } from './prompts';
 import { AI_EQ, D, EX, EXM } from '@fitbay/shared/exercises';
 import { AiError, MockProvider, OpenAIProvider, parseJson, type Provider } from './provider';
 import { AIMSG, KIND, LIMITS } from './limits';
 import { JSON_TASKS, modelFor } from './config';
 
 /** Задачи, промпты которых уже перенесены. Остальные появятся вместе с их экранами (A3.4 тренировки, A4.3 план). */
-export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai'];
+export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai', 'activity'];
 const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr'];
 const UNAVAILABLE = 'ИИ недоступен в этом окне.';
 const DAY = 864e5;
@@ -132,6 +132,22 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
           week,
           lang,
         });
+      } else if (task === 'activity') {
+        if (!prof) throw new HttpError(400, 'profile required');
+        const p = prof as unknown as CalcProfile;
+        const imgs = (Array.isArray(b.images) ? b.images : []).filter((x): x is string => typeof x === 'string' && x.length < 3_000_000).slice(0, 5).map((x) => x.replace(/^data:image\/\w+;base64,/, ''));
+        if (b.mode === 'edit') {
+          if (!imgs.length) throw new HttpError(400, 'images required');
+          const c = (typeof b.cur === 'object' && b.cur ? b.cur : {}) as { name?: string; min?: string; km?: string; steps?: string; kcal?: string };
+          prompt = activityEditPrompt({ ...c, name: String(c.name ?? '') }, { w: p.w, h: p.h });
+        } else {
+          const txt = typeof b.text === 'string' ? b.text.trim().slice(0, 2000) : '';
+          if (!txt && !imgs.length) throw new HttpError(400, 'text or images required');
+          const acts = await repo.query(U(who.uid), { prefix: `ACT#${day}` });
+          const list = acts.map((x) => `${x.SK.slice(4)}|${x.name}|${x.min || 0}|${x.km || ''}|${x.steps || ''}|${x.kcal}`).join('\n');
+          prompt = activityPrompt(imgs.length ? actShotsExtra(imgs.length) : actTextExtra(txt), { sex: p.sex, age: p.birth ? age(p.birth, day) : (p.age ?? 30), h: p.h, w: p.w }, list, lang);
+        }
+        images = imgs.length ? imgs : undefined;
       } else if (task === 'workout_ai') {
         if (!prof) throw new HttpError(400, 'profile required');
         const place = (['gym', 'street', 'home'] as const).find((x) => x === b.place) ?? 'gym';

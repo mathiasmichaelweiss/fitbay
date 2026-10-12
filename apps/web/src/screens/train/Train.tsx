@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import { de, ru } from 'date-fns/locale';
@@ -12,6 +12,7 @@ import { WorkoutSheet } from './WorkoutSheet';
 import { ProgramsSheet, ProgramEditor } from './Programs';
 import { HistorySheet } from './History';
 import { AiTrainer } from './AiTrainer';
+import { ActivitySheet, ActivityTile } from './Activity';
 
 /** Раздел #train прототипа (renderTrain). */
 export function Train() {
@@ -21,6 +22,7 @@ export function Train() {
   const { data: profile } = useProfile();
   const { db } = useEx();
   const { active, set } = useTrain();
+  const [act, setAct] = useState(false);
   const locale = i18n.language === 'de' ? de : ru;
 
   useEffect(() => {
@@ -57,6 +59,7 @@ export function Train() {
         title={<span className="mt-1.5 block">{t(active ? 'Продолжить тренировку' : 'Начать тренировку')}</span>}
         sub={active ? `${active.items.length} ${t('упр.')} · ${Math.round((Date.now() - active.start) / 60000)} ${t('мин')}` : t('Пустая или по программе')}
       />
+      <ActivityTile onOpen={() => setAct(true)} />
       <Tile color="cream" small onClick={() => set({ lib: true, pick: false })} data-testid="t-lib" label={t('БИБЛИОТЕКА')} value={db ? db.EX.length : 876} sub={t('упражнений')} />
       <Tile color="yellow" dot onClick={() => set({ prog: true, progEmpty: false })} data-testid="t-prog" title={t('Мои программы')} sub={`${programs.length} ${t('сохранено')}`} />
       <Tile full color="teal" className="min-h-[120px]" onClick={() => set({ ai: true })} data-testid="t-ai" label={t('» AI-ТРЕНЕР')} title={t('Составить программу')} sub={t('Под цель, уровень и место тренировок')} />
@@ -75,6 +78,7 @@ export function Train() {
         </div>
       </Tile>
 
+      <ActivitySheet open={act} onClose={() => setAct(false)} />
       <WorkoutSheet />
       <ProgramsSheet />
       <ProgramEditor />

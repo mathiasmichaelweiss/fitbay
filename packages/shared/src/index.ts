@@ -171,3 +171,16 @@ export interface ActiveWorkout {
   /** тренер ведет тренировку клиента (forClient прототипа) */
   forClient?: { id: string; name: string; slot?: string };
 }
+
+/** Активность (type "activity" прототипа): ходьба, шаги, велосипед… src: text | shot | manual. */
+export interface ActivityEntry {
+  id: string;
+  date: string;
+  at: number;
+  name: string;
+  min?: number;
+  km?: number | null;
+  steps?: number | null;
+  kcal: number;
+  src?: 'text' | 'shot' | 'manual';
+}

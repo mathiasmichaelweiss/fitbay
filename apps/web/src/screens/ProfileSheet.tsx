@@ -10,7 +10,7 @@ import { SheetPage } from '@/components/ui/sheet-page';
 import { SingleToggle } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { api } from '@/data/api';
-import { today, useSaveProfile } from '@/data/hooks';
+import { today, useSaveProfile, useDayCtx } from '@/data/hooks';
 
 /** «Тело и цели» прототипа (openProf, renderProf, renderMacroBox, eta). Замеры, «До и после» и тренер переносятся в A3.5 и A3.6. */
 const GOALS: [Goal, string][] = [['lose', 'Похудение'], ['recomp', 'Рекомпозиция'], ['keep', 'Удержание'], ['gain', 'Набор мышц']];
@@ -42,6 +42,7 @@ export function MacroSum({ p, f, c }: M) {
 }
 
 export function ProfileSheet({ open, profile, onClose }: { open: boolean; profile: Profile; onClose: () => void }) {
+  const ctx = useDayCtx();
   const { t, i18n } = useTranslation();
   const de = i18n.language === 'de';
   const save = useSaveProfile();
@@ -60,8 +61,8 @@ export function ProfileSheet({ open, profile, onClose }: { open: boolean; profil
   const n = (s: string, fb: number) => Number(s.replace(',', '.')) || fb;
   const draft: Profile = { ...d, h: n(nums.h, d.h), w: n(nums.w, d.w), tw: n(nums.tw, n(nums.w, d.w)) };
   const pct = draft.actPct ?? 0.5;
-  const tg = target(draft as unknown as CalcProfile, today(), { pct });
-  const auto = target({ ...(draft as unknown as CalcProfile), macro: undefined, flex: undefined }, today(), { pct });
+  const tg = target(draft as unknown as CalcProfile, today(), { ...ctx(today()), pct });
+  const auto = target({ ...(draft as unknown as CalcProfile), macro: undefined, flex: undefined }, today(), { ...ctx(today()), pct });
   const m = draft.macro;
   const manual = !!m?.on;
   const fx = !!draft.flex?.on;

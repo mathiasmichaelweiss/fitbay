@@ -107,7 +107,8 @@ export function makeHandler(repo: Repo) {
         if (!existing && ent.key !== 'date') throw new HttpError(404, 'not found');
         if (!existing && !DATE_RE.test(id)) throw new HttpError(400, 'id must be YYYY-MM-DD');
         const now = new Date().toISOString();
-        const item: Item = { ...clean(body(e)), PK: pk(uid), SK: sk, createdAt: existing?.createdAt ?? now, updatedAt: now };
+        // PUT дополняет запись (как update в local-режиме): поля, которых нет в теле, сохраняются
+        const item: Item = { ...(existing ?? {}), ...clean(body(e)), PK: pk(uid), SK: sk, createdAt: existing?.createdAt ?? now, updatedAt: now };
         await repo.put(item);
         return json(200, toDto(item));
       }

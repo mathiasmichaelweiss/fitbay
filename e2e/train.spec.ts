@@ -132,6 +132,32 @@ test('AI-тренер: программа по дням сохраняется �
   await expect(page.getByRole('dialog', { name: 'Мои программы' }).getByTestId('program')).toHaveCount(2);
 });
 
+test('активность: текстом через ИИ, круги, норма питания, правка и удаление', async ({ page }) => {
+  await openTrain(page);
+  await expect(page.getByTestId('act-k')).toHaveText('0 / 400');
+  await page.getByTestId('t-act').click();
+  const sh = page.getByRole('dialog', { name: 'Активность сегодня' });
+  await expect(sh.getByText('Пока ничего.')).toBeVisible();
+  await sh.getByRole('button', { name: '+ Добавить активность' }).click();
+  const add = page.getByRole('dialog', { name: 'Добавить активность' });
+  await add.getByLabel('Словами или голосом').fill('час гулял');
+  await add.getByRole('button', { name: 'Разобрать текст' }).click();
+  await expect(add.getByTestId('act-res')).toContainText('новая запись · 60 мин · 5 km · 7000 шагов');
+  await add.getByTestId('act-res').getByRole('button', { name: 'Добавить активность' }).click();
+  await expect(add).toBeHidden();
+  await expect(sh.getByTestId('act-list')).toContainText('Ходьба');
+  await sh.getByText('Ходьба').click();
+  const ed = page.getByRole('dialog', { name: 'Ходьба: изменить' });
+  await ed.getByLabel('Ккал').fill('300');
+  await ed.getByRole('button', { name: 'Сохранить изменения' }).click();
+  await expect(sh.getByTestId('act-list')).toContainText('300');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('act-k')).toHaveText('300 / 400');
+  // половина сожжённого идет в норму питания (доля по умолчанию 0,5)
+  await page.getByTestId('modesw').getByRole('button', { name: 'Питание' }).click();
+  await expect(page.getByTestId('kcal-target')).toContainText('+ 150 за активность');
+});
+
 test('тренировки без горизонтального скролла на 360 px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await openTrain(page);
