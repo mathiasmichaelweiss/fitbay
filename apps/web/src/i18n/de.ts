@@ -29,6 +29,7 @@ export const de: Dict = {
     yourTarget: 'Dein Tagesbedarf',
     targetNote: 'Berechnet nach Mifflin. Später kann dein Trainer den Bedarf anpassen.',
     next: 'Weiter', back: 'Zurück', finish: 'Los geht’s',
+    pickDate: 'Datum wählen', done: 'Fertig',
   },
   food: {
     eaten: 'gegessen', left: 'übrig', over: 'über Bedarf', of: 'von',

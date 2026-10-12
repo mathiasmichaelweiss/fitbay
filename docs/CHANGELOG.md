@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-12 · Переход на shadcn/ui, кастомные оверлеи
+- Tailwind v4 + shadcn/ui (new-york, Radix) в `apps/web/src/components/ui`: button, card, input, label, checkbox, toggle, toggle-group, badge, drawer (vaul), dialog, popover, select, calendar, separator, progress, плюс свои tile, ring, field, date-picker. Темa: переменные shadcn ссылаются на токены прототипа.
+- Нативных контролов больше нет: дата рождения выбирается в шторке с календарём, месяц и год через кастомный Select. Новый e2e `native.spec.ts` падает, если на странице появится `<select>` или date-инпут.
+- Все экраны (онбординг, Сегодня, чек-ин, Прогресс, навигация) переписаны на компоненты shadcn, иконки lucide. Старые `ui/*.css` удалены.
+- Исправлено: полоса стрелок календаря перекрывала выбор месяца и года.
+- `CLAUDE.md` с правилами UI для следующих задач. Витрина `/ui` показывает все компоненты.
+
 ## 2026-10-12 · Первый рабочий интерфейс (локальный режим)
 - **Слой данных** `apps/web/src/data`: один интерфейс API, два режима. `local` хранит всё в localStorage (по умолчанию), `http` ходит в `/me/...`, если задан `VITE_API_URL`. Хуки TanStack Query.
 - **calc** (временно, до A1.1): `age`, `factor`, `target` (Миффлин × активность × цель, белок 1,8 г/кг, жир 0,9 г/кг), `sum`, `ratio`. Покрытие 100%.

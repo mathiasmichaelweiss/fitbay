@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, XIcon } from 'lucide-react';
 import { SLOTS, type Meal, type Slot } from '@fitbay/shared';
 import { sum, ratio } from '@fitbay/calc';
-import { Bar, Button, Card, Field, Ring, Seg, Sheet, Tile } from '../ui';
-import { today, useDaySummary, useMealOps } from '../data/hooks';
-import { useNav } from '../nav/store';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Field } from '@/components/ui/field';
+import { MacroBar, Ring } from '@/components/ui/ring';
+import { Tile, Tiles } from '@/components/ui/tile';
+import { SingleToggle } from '@/components/ui/toggle-group';
+import { today, useDaySummary, useMealOps } from '@/data/hooks';
+import { useNav } from '@/nav/store';
 import { CheckinCard } from './Checkin';
-import './screens.css';
 
 const shift = (date: string, days: number) => {
   const d = new Date(`${date}T12:00:00`);
@@ -38,34 +44,40 @@ export function Today() {
   const g = t('food.g');
 
   return (
-    <div className="stack">
-      <div className="daynav">
-        <button type="button" className="iconbtn" aria-label={t('food.prevDay')} onClick={() => setDate(shift(date, -1))}>‹</button>
+    <div className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="icon" aria-label={t('food.prevDay')} onClick={() => setDate(shift(date, -1))}>
+          <ChevronLeftIcon className="size-5" />
+        </Button>
         <strong>{label}</strong>
-        <button type="button" className="iconbtn" aria-label={t('food.nextDay')} disabled={isToday} onClick={() => setDate(shift(date, 1))}>›</button>
+        <Button variant="ghost" size="icon" aria-label={t('food.nextDay')} disabled={isToday} onClick={() => setDate(shift(date, 1))}>
+          <ChevronRightIcon className="size-5" />
+        </Button>
       </div>
 
       <Card>
         {target ? (
-          <div className="today__summary">
+          <div className="flex items-center gap-4 max-[360px]:flex-col">
             <Ring value={ratio(eaten.kcal, target.kcal)}>
-              <span className="ring__big" data-testid="kcal-left">{Math.abs(left)}</span>
-              <span className="muted small">{left >= 0 ? t('food.left') : t('food.over')}</span>
-              <span className="muted small">
+              <span className="text-[28px] font-bold tabular-nums" data-testid="kcal-left">
+                {Math.abs(left)}
+              </span>
+              <span className="text-sm text-muted-foreground">{left >= 0 ? t('food.left') : t('food.over')}</span>
+              <span className="text-sm text-muted-foreground">
                 {eaten.kcal} {t('food.of')} {target.kcal}
               </span>
             </Ring>
-            <div className="today__bars">
-              <Bar label={t('food.p')} eaten={eaten.p} goal={target.p} color="var(--teal)" unit={g} />
-              <Bar label={t('food.f')} eaten={eaten.f} goal={target.f} color="var(--yellow)" unit={g} />
-              <Bar label={t('food.c')} eaten={eaten.c} goal={target.c} color="var(--orange)" unit={g} />
+            <div className="grid min-w-0 flex-1 gap-3 max-[360px]:w-full">
+              <MacroBar label={t('food.p')} eaten={eaten.p} goal={target.p} color="teal" unit={g} />
+              <MacroBar label={t('food.f')} eaten={eaten.f} goal={target.f} color="yellow" unit={g} />
+              <MacroBar label={t('food.c')} eaten={eaten.c} goal={target.c} color="orange" unit={g} />
             </div>
           </div>
         ) : (
-          <p className="muted">{t('food.noTarget')}</p>
+          <p className="m-0 text-muted-foreground">{t('food.noTarget')}</p>
         )}
-        <Button block onClick={() => setAdding(slotNow())}>
-          + {t('today.addFood')}
+        <Button className="w-full" onClick={() => setAdding(slotNow())}>
+          <PlusIcon /> {t('today.addFood')}
         </Button>
       </Card>
 
@@ -73,30 +85,34 @@ export function Today() {
         const list = meals.filter((m) => m.slot === slot);
         const s = sum(list);
         return (
-          <Card key={slot}>
-            <div className="slot__head">
-              <h2 className="card__title" style={{ margin: 0 }}>{t(`food.slot_${slot}`)}</h2>
-              <span className="muted small">{s.kcal ? `${s.kcal} ${t('food.kcalUnit')}` : ''}</span>
-              <button type="button" className="chip" aria-label={`${t('food.add')}: ${t(`food.slot_${slot}`)}`} onClick={() => setAdding(slot)}>
-                +
-              </button>
-            </div>
+          <Card key={slot} className="gap-2">
+            <CardHeader>
+              <CardTitle>{t(`food.slot_${slot}`)}</CardTitle>
+              {s.kcal > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  {s.kcal} {t('food.kcalUnit')}
+                </span>
+              )}
+              <Button variant="outline" size="icon" className="size-9" aria-label={`${t('food.add')}: ${t(`food.slot_${slot}`)}`} onClick={() => setAdding(slot)}>
+                <PlusIcon />
+              </Button>
+            </CardHeader>
             {list.length === 0 ? (
-              <p className="muted small" style={{ margin: '8px 0 0' }}>{t('food.empty')}</p>
+              <p className="m-0 text-sm text-muted-foreground">{t('food.empty')}</p>
             ) : (
-              <ul className="meals">
+              <ul className="m-0 grid list-none p-0">
                 {list.map((m) => (
-                  <li key={m.id} className="meal">
-                    <div>
+                  <li key={m.id} data-testid="row" className="flex items-center gap-2 border-t py-2">
+                    <div className="min-w-0 flex-1 break-words">
                       <div>{m.name}</div>
-                      <div className="muted small">
+                      <div className="text-sm text-muted-foreground">
                         {m.grams ? `${m.grams} ${g} · ` : ''}Б {m.p} · Ж {m.f} · У {m.c}
                       </div>
                     </div>
-                    <span className="meal__kcal">{m.kcal}</span>
-                    <button type="button" className="iconbtn" aria-label={`${t('food.delete')}: ${m.name}`} onClick={() => remove.mutate(m.id)}>
-                      ×
-                    </button>
+                    <span className="font-semibold tabular-nums">{m.kcal}</span>
+                    <Button variant="ghost" size="icon" aria-label={`${t('food.delete')}: ${m.name}`} onClick={() => remove.mutate(m.id)}>
+                      <XIcon className="size-5" />
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -107,10 +123,10 @@ export function Today() {
 
       <CheckinCard date={date} />
 
-      <div className="tiles">
+      <Tiles>
         <Tile label={t('today.coach')} value="…" />
         <Tile label={t('today.nextWorkout')} value="…" onClick={() => setTab('workouts')} />
-      </div>
+      </Tiles>
 
       <AddFood date={date} slot={adding} onClose={() => setAdding(null)} />
     </div>
@@ -148,44 +164,43 @@ function AddFood({ date, slot, onClose }: { date: string; slot: Slot | null; onC
   );
 
   return (
-    <Sheet open={slot !== null} title={t('food.addTitle')} onClose={onClose}>
-      <div className="stack">
-        <Seg
-          value={mode}
-          onChange={setMode}
-          options={[
-            { value: 'manual', label: t('food.modeManual') },
-            { value: 'photo', label: t('food.modePhoto') },
-            { value: 'text', label: t('food.modeText') },
-          ]}
-        />
-        {mode !== 'manual' ? (
-          <p className="muted">{t('food.aiSoon')}</p>
-        ) : (
-          <>
-            <div className="chips">
-              {SLOTS.map((x) => (
-                <button key={x} type="button" className="chip" aria-pressed={s === x} onClick={() => setS(x)}>
-                  {t(`food.slot_${x}`)}
-                </button>
-              ))}
-            </div>
-            {field('name', t('food.name'), false)}
-            <div className="grid2">
-              {field('grams', t('food.grams'))}
-              {field('kcal', t('food.kcal'))}
-            </div>
-            <div className="grid3">
-              {field('p', `${t('food.p')}, ${t('food.g')}`)}
-              {field('f', `${t('food.f')}, ${t('food.g')}`)}
-              {field('c', `${t('food.c')}, ${t('food.g')}`)}
-            </div>
-            <Button block disabled={!valid || create.isPending} onClick={submit}>
-              {t('food.save')}
-            </Button>
-          </>
-        )}
-      </div>
-    </Sheet>
+    <Drawer open={slot !== null} onOpenChange={(o) => !o && onClose()}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>{t('food.addTitle')}</DrawerTitle>
+        </DrawerHeader>
+        <div className="grid gap-4">
+          <SingleToggle
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: 'manual', label: t('food.modeManual') },
+              { value: 'photo', label: t('food.modePhoto') },
+              { value: 'text', label: t('food.modeText') },
+            ]}
+          />
+          {mode !== 'manual' ? (
+            <p className="m-0 text-muted-foreground">{t('food.aiSoon')}</p>
+          ) : (
+            <>
+              <SingleToggle variant="chip" value={s} onChange={setS} options={SLOTS.map((x) => ({ value: x, label: t(`food.slot_${x}`) }))} />
+              {field('name', t('food.name'), false)}
+              <div className="grid grid-cols-2 gap-3">
+                {field('grams', t('food.grams'))}
+                {field('kcal', t('food.kcal'))}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {field('p', `${t('food.p')}, ${t('food.g')}`)}
+                {field('f', `${t('food.f')}, ${t('food.g')}`)}
+                {field('c', `${t('food.c')}, ${t('food.g')}`)}
+              </div>
+              <Button className="w-full" disabled={!valid || create.isPending} onClick={submit}>
+                {t('food.save')}
+              </Button>
+            </>
+          )}
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 }

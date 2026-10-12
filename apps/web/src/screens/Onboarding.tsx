@@ -2,9 +2,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { target } from '@fitbay/calc';
 import { CONSENT_VERSIONS, type ConsentKind, type Profile } from '@fitbay/shared';
-import { Button, Card, Field, Seg, Tile } from '../ui';
-import { today, useSaveProfile } from '../data/hooks';
-import './screens.css';
+import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Field, FieldGroup } from '@/components/ui/field';
+import { Tile, Tiles } from '@/components/ui/tile';
+import { SingleToggle } from '@/components/ui/toggle-group';
+import { today, useSaveProfile } from '@/data/hooks';
 
 type Draft = Omit<Profile, 'consents' | 'h' | 'w' | 'tw'> & { h: string; w: string; tw: string };
 
@@ -44,89 +49,98 @@ export function Onboarding({ initial }: { initial?: Profile | null }) {
     };
   };
   const preview = okAbout ? target(profile(), today()) : null;
+  const titles = ['', t('onb.welcome'), t('onb.aboutTitle'), t('onb.goalTitle')];
 
   return (
-    <main className="page onb">
+    <main className="mx-auto grid max-w-[480px] gap-4 px-4 pb-8 pt-6">
       <header>
-        <p className="onb__step">{t('onb.step', { n: step })}</p>
-        <h1 className="onb__title">{step === 1 ? t('onb.welcome') : step === 2 ? t('onb.aboutTitle') : t('onb.goalTitle')}</h1>
+        <p className="m-0 text-sm text-muted-foreground">{t('onb.step', { n: step })}</p>
+        <h1 className="m-0 mt-1 text-[28px] font-bold leading-tight">{titles[step]}</h1>
+        <div className="mt-3 flex gap-1.5" aria-hidden>
+          {[1, 2, 3].map((n) => (
+            <span key={n} className={`h-1 flex-1 rounded-full ${n <= step ? 'bg-primary' : 'bg-secondary'}`} />
+          ))}
+        </div>
       </header>
 
       {step === 1 && (
-        <Card title={t('onb.consentsTitle')}>
-          <p className="muted">{t('onb.consentsText')}</p>
-          {(['health', 'privacy', 'trainer'] as ConsentKind[]).map((k) => (
-            <label key={k} className="check">
-              <input type="checkbox" checked={agree[k]} onChange={(e) => setAgree((a) => ({ ...a, [k]: e.target.checked }))} />
-              <span>{t(`onb.${k}`)}</span>
-            </label>
-          ))}
+        <Card>
+          <CardTitle>{t('onb.consentsTitle')}</CardTitle>
+          <CardDescription>{t('onb.consentsText')}</CardDescription>
+          <div className="grid gap-1">
+            {(['health', 'privacy', 'trainer'] as ConsentKind[]).map((k) => (
+              <label key={k} htmlFor={`c-${k}`} className="flex min-h-11 cursor-pointer items-start gap-3 py-2">
+                <Checkbox id={`c-${k}`} className="mt-0.5" checked={agree[k]} onCheckedChange={(v) => setAgree((a) => ({ ...a, [k]: v === true }))} />
+                <span className="text-[15px] leading-snug">{t(`onb.${k}`)}</span>
+              </label>
+            ))}
+          </div>
         </Card>
       )}
 
       {step === 2 && (
         <Card>
-          <div className="stack">
-            <div className="field">
-              <span className="field__label">{t('onb.sex')}</span>
-              <Seg value={d.sex} onChange={(v) => set('sex', v)} options={[{ value: 'm', label: t('onb.male') }, { value: 'f', label: t('onb.female') }]} />
-            </div>
-            <Field label={t('onb.birth')} type="date" value={d.birth} max={today()} onChange={(e) => set('birth', e.target.value)} />
-            <Field label={t('onb.height')} inputMode="decimal" value={d.h} onChange={(e) => set('h', e.target.value)} />
-            <Field label={t('onb.weight')} inputMode="decimal" value={d.w} onChange={(e) => set('w', e.target.value)} />
-          </div>
+          <FieldGroup label={t('onb.sex')}>
+            <SingleToggle value={d.sex} onChange={(v) => set('sex', v)} options={[{ value: 'm', label: t('onb.male') }, { value: 'f', label: t('onb.female') }]} />
+          </FieldGroup>
+          <FieldGroup label={t('onb.birth')}>
+            <DatePicker
+              aria-label={t('onb.birth')}
+              title={t('onb.birth')}
+              value={d.birth}
+              onChange={(v) => set('birth', v)}
+              lang={i18n.language}
+              placeholder={t('onb.pickDate')}
+              doneLabel={t('onb.done')}
+              max={today()}
+            />
+          </FieldGroup>
+          <Field label={t('onb.height')} inputMode="decimal" value={d.h} onChange={(e) => set('h', e.target.value)} />
+          <Field label={t('onb.weight')} inputMode="decimal" value={d.w} onChange={(e) => set('w', e.target.value)} />
         </Card>
       )}
 
       {step === 3 && (
         <>
           <Card>
-            <div className="stack">
-              <div className="field">
-                <span className="field__label">{t('onb.activity')}</span>
-                <div className="chips">
-                  {(['low', 'light', 'mid', 'high'] as const).map((a) => (
-                    <button key={a} type="button" className="chip" aria-pressed={d.act === a} onClick={() => set('act', a)}>
-                      {t(`onb.act_${a}`)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="field">
-                <span className="field__label">{t('onb.goal')}</span>
-                <Seg
-                  value={d.goal}
-                  onChange={(v) => set('goal', v)}
-                  options={(['lose', 'keep', 'gain'] as const).map((g) => ({ value: g, label: t(`onb.goal_${g}`) }))}
-                />
-              </div>
-              <Field label={t('onb.targetWeight')} inputMode="decimal" value={d.tw} onChange={(e) => set('tw', e.target.value)} />
-            </div>
+            <FieldGroup label={t('onb.activity')}>
+              <SingleToggle
+                variant="chip"
+                value={d.act}
+                onChange={(v) => set('act', v)}
+                options={(['low', 'light', 'mid', 'high'] as const).map((a) => ({ value: a, label: t(`onb.act_${a}`) }))}
+              />
+            </FieldGroup>
+            <FieldGroup label={t('onb.goal')}>
+              <SingleToggle value={d.goal} onChange={(v) => set('goal', v)} options={(['lose', 'keep', 'gain'] as const).map((g) => ({ value: g, label: t(`onb.goal_${g}`) }))} />
+            </FieldGroup>
+            <Field label={t('onb.targetWeight')} inputMode="decimal" value={d.tw} onChange={(e) => set('tw', e.target.value)} />
           </Card>
           {preview && (
-            <Card title={t('onb.yourTarget')}>
-              <div className="tiles">
+            <Card>
+              <CardTitle>{t('onb.yourTarget')}</CardTitle>
+              <Tiles>
                 <Tile label={t('today.kcal')} value={preview.kcal} tone="orange" />
-                <Tile label={t('today.protein')} value={`${preview.p} г`} tone="teal" />
-              </div>
-              <p className="muted small">{t('onb.targetNote')}</p>
+                <Tile label={t('today.protein')} value={`${preview.p} ${t('food.g')}`} tone="teal" />
+              </Tiles>
+              <CardDescription>{t('onb.targetNote')}</CardDescription>
             </Card>
           )}
         </>
       )}
 
-      <div className="onb__actions">
+      <div className="flex justify-end gap-3">
         {step > 1 && (
-          <Button variant="ghost" onClick={() => setStep(step - 1)}>
+          <Button variant="secondary" className="min-w-[120px]" onClick={() => setStep(step - 1)}>
             {t('onb.back')}
           </Button>
         )}
         {step < 3 ? (
-          <Button disabled={step === 1 ? !okConsents : !okAbout} onClick={() => setStep(step + 1)}>
+          <Button className="min-w-[120px]" disabled={step === 1 ? !okConsents : !okAbout} onClick={() => setStep(step + 1)}>
             {t('onb.next')}
           </Button>
         ) : (
-          <Button disabled={!okAbout || save.isPending} onClick={() => save.mutate(profile())}>
+          <Button className="min-w-[120px]" disabled={!okAbout || save.isPending} onClick={() => save.mutate(profile())}>
             {t('onb.finish')}
           </Button>
         )}

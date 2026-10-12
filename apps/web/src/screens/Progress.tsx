@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Field, Tile } from '../ui';
-import { today, useMeasureOps, useMeasures, useProfile } from '../data/hooks';
+import { XIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardTitle } from '@/components/ui/card';
+import { Field } from '@/components/ui/field';
+import { Tile, Tiles } from '@/components/ui/tile';
+import { today, useMeasureOps, useMeasures, useProfile } from '@/data/hooks';
 
 const fmt = (n: number) => (Math.round(n * 10) / 10).toLocaleString('ru-RU');
 
-/** Линия веса. Простой SVG без библиотек; диапазоны и среднее появятся в A3.5. */
+/** Линия веса. Простой SVG; диапазоны и среднее появятся в A3.5. */
 function Spark({ values }: { values: number[] }) {
   if (values.length < 2) return null;
   const w = 320, h = 90, pad = 6;
@@ -19,7 +23,7 @@ function Spark({ values }: { values: number[] }) {
 }
 
 export function Progress() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: profile } = useProfile();
   const { data: all = [] } = useMeasures();
   const { update, remove } = useMeasureOps();
@@ -32,44 +36,45 @@ export function Progress() {
   const start = weights[0]?.weight ?? profile?.w;
   const current = weights.at(-1)?.weight ?? profile?.w;
   const diff = start !== undefined && current !== undefined ? current - start : 0;
+  const kg = t('weight.kg');
 
   return (
-    <div className="stack">
-      <div className="tiles">
-        <Tile label={t('weight.current')} value={current !== undefined ? `${fmt(current)} ${t('weight.kg')}` : '…'} tone="teal" />
-        <Tile label={t('weight.target')} value={profile?.tw ? `${fmt(profile.tw)} ${t('weight.kg')}` : '…'} tone="yellow" />
-        <Tile label={t('weight.start')} value={start !== undefined ? `${fmt(start)} ${t('weight.kg')}` : '…'} />
-        <Tile label={t('weight.change')} value={`${diff > 0 ? '+' : ''}${fmt(diff)} ${t('weight.kg')}`} tone={diff <= 0 ? 'teal' : 'orange'} />
-      </div>
+    <div className="grid gap-4">
+      <Tiles>
+        <Tile label={t('weight.current')} value={current !== undefined ? `${fmt(current)} ${kg}` : '…'} tone="teal" />
+        <Tile label={t('weight.target')} value={profile?.tw ? `${fmt(profile.tw)} ${kg}` : '…'} tone="yellow" />
+        <Tile label={t('weight.start')} value={start !== undefined ? `${fmt(start)} ${kg}` : '…'} />
+        <Tile label={t('weight.change')} value={`${diff > 0 ? '+' : ''}${fmt(diff)} ${kg}`} tone={diff <= 0 ? 'teal' : 'orange'} />
+      </Tiles>
 
-      <Card title={t('weight.add')}>
-        <div className="stack">
-          <Field label={t('weight.today')} inputMode="decimal" placeholder={todays ? fmt(todays.weight) : ''} value={input} onChange={(e) => setInput(e.target.value)} />
-          <Button
-            block
-            disabled={!valid || update.isPending}
-            onClick={() => update.mutate({ id: today(), date: today(), weight: Math.round(n * 10) / 10 }, { onSuccess: () => setInput('') })}
-          >
-            {t('weight.save')}
-          </Button>
-        </div>
+      <Card>
+        <CardTitle>{t('weight.add')}</CardTitle>
+        <Field label={t('weight.today')} inputMode="decimal" placeholder={todays ? fmt(todays.weight) : ''} value={input} onChange={(e) => setInput(e.target.value)} />
+        <Button
+          className="w-full"
+          disabled={!valid || update.isPending}
+          onClick={() => update.mutate({ id: today(), date: today(), weight: Math.round(n * 10) / 10 }, { onSuccess: () => setInput('') })}
+        >
+          {t('weight.save')}
+        </Button>
       </Card>
 
-      <Card title={t('weight.history')}>
+      <Card className="gap-2">
+        <CardTitle>{t('weight.history')}</CardTitle>
         <Spark values={weights.map((w) => w.weight)} />
         {weights.length === 0 ? (
-          <p className="muted small">{t('weight.empty')}</p>
+          <p className="m-0 text-sm text-muted-foreground">{t('weight.empty')}</p>
         ) : (
-          <ul className="meals">
+          <ul className="m-0 grid list-none p-0">
             {[...weights].reverse().slice(0, 30).map((w) => (
-              <li key={w.id} className="meal">
-                <div>{new Date(`${w.date}T12:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                <span className="meal__kcal">
-                  {fmt(w.weight)} {t('weight.kg')}
+              <li key={w.id} data-testid="row" className="flex items-center gap-2 border-t py-2">
+                <div className="flex-1">{new Date(`${w.date}T12:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                <span className="font-semibold tabular-nums">
+                  {fmt(w.weight)} {kg}
                 </span>
-                <button type="button" className="iconbtn" aria-label={`${t('weight.delete')}: ${w.date}`} onClick={() => remove.mutate(w.id)}>
-                  ×
-                </button>
+                <Button variant="ghost" size="icon" aria-label={`${t('weight.delete')}: ${w.date}`} onClick={() => remove.mutate(w.id)}>
+                  <XIcon className="size-5" />
+                </Button>
               </li>
             ))}
           </ul>

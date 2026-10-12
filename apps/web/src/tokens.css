@@ -1,5 +1,11 @@
-/* Дизайн-токены FitBay. Цвета и шрифт из прототипа (спека, раздел 2).
-   Радиусы, отступы и оттенки фона предварительные: сверить с CSS kalorii.html. */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/*
+ * Дизайн-токены FitBay. Основа компонентов: shadcn/ui (src/components/ui).
+ * Бренд (orange, yellow, teal) из прототипа; переменные shadcn ниже ссылаются на них.
+ * Тема только тёмная, как в прототипе.
+ */
 :root {
   --orange: #ff5a0a;
   --yellow: #f2b705;
@@ -19,25 +25,72 @@
   --fs-md: 16px;
   --fs-lg: 20px;
   --fs-xl: 28px;
-
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 22px;
-  --r-pill: 999px;
-
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
   --sp-4: 16px;
   --sp-5: 24px;
-
   --tap: 44px;
-  --shadow: 0 8px 30px rgb(0 0 0 / 0.35);
+
+  /* shadcn */
+  --radius: 1rem;
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+  --primary: var(--orange);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--fg);
+  --muted-foreground: var(--muted);
+  --accent: #2a2f38;
+  --accent-foreground: var(--fg);
+  --destructive: var(--red);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--orange);
+  color-scheme: dark;
 }
 
-*, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); overflow-x: hidden; -webkit-text-size-adjust: 100%; }
-body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); line-height: 1.4; }
-input, select, textarea, button { font: inherit; }
-input, select, textarea { font-size: var(--fs-md); }
-img { max-width: 100%; }
+@theme inline {
+  --font-sans: var(--font);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--secondary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand-orange: var(--orange);
+  --color-brand-yellow: var(--yellow);
+  --color-brand-teal: var(--teal);
+  --color-brand-red: var(--red);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html, body { @apply bg-background text-foreground; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+  body { font-family: var(--font); line-height: 1.4; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  /* 16px в полях ввода: iOS не зумит (спека 6) */
+  input, select, textarea { font-size: 16px !important; }
+  button:not(:disabled), [role='button']:not(:disabled) { cursor: pointer; }
+}

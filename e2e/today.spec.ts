@@ -33,9 +33,9 @@ test('чек-ин: все шкалы обязательны, после сохр
   await page.getByRole('button', { name: 'Отметить самочувствие' }).click();
   const sheet = page.getByRole('dialog');
   const save = sheet.getByRole('button', { name: 'Сохранить' });
-  for (const k of ['Сон', 'Энергия', 'Стресс', 'Голод', 'Боль']) await sheet.getByRole('group', { name: k }).getByRole('button', { name: '4' }).click();
+  for (const k of ['Сон', 'Энергия', 'Стресс', 'Голод', 'Боль']) await sheet.getByRole('group', { name: k }).getByRole('radio', { name: '4' }).click();
   await expect(save).toBeDisabled();
-  await sheet.getByRole('group', { name: 'Соблюдение плана' }).getByRole('button', { name: '5' }).click();
+  await sheet.getByRole('group', { name: 'Соблюдение плана' }).getByRole('radio', { name: '5' }).click();
   await save.click();
   await expect(page.getByText('Соблюдение плана 5')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Изменить' })).toBeVisible();
@@ -43,15 +43,15 @@ test('чек-ин: все шкалы обязательны, после сохр
 
 test('вес: запись за сегодня обновляется, а не дублируется', async ({ page }) => {
   await page.goto('/');
-  await page.locator('.tabbar').getByRole('button', { name: 'Прогресс' }).click();
+  await page.getByTestId('tabbar').getByRole('button', { name: 'Прогресс' }).click();
   const input = page.getByLabel('Вес сегодня, кг');
   await input.fill('79,4');
   await page.getByRole('button', { name: 'Сохранить' }).click();
   await input.fill('79,1');
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.locator('.meal')).toHaveCount(1);
-  await expect(page.locator('.tile').filter({ hasText: 'Сейчас' })).toContainText('79,1');
-  await expect(page.locator('.tile').filter({ hasText: 'Изменение' })).toContainText('0');
+  await expect(page.getByTestId('row')).toHaveCount(1);
+  await expect(page.locator('[data-slot=tile]').filter({ hasText: 'Сейчас' })).toContainText('79,1');
+  await expect(page.locator('[data-slot=tile]').filter({ hasText: 'Изменение' })).toContainText('0');
 });
 
 test('экран «Сегодня» без горизонтального скролла на 360 px', async ({ page }) => {
