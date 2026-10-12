@@ -543,3 +543,4 @@ export function eta(p: Pick<CalcProfile, 'w' | 'tw' | 'goal'>): { weeks: number 
   if ((p.goal === 'gain') !== ((p.tw ?? p.w) > p.w)) return { wrong: true };
   return { weeks: Math.ceil(d / rate) };
 }
+export * from './train';

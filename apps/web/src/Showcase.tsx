@@ -1,3 +1,5 @@
+import { Textarea } from '@/components/ui/textarea';
+import { askConfirm } from '@/components/ui/confirm';
 import { useState } from 'react';
 import { InfoIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -131,6 +133,7 @@ export function Showcase() {
         <FieldGroup label="Дата (DatePicker)">
           <DatePicker title="Дата рождения" value={date} onChange={setDate} placeholder="Выберите дату" doneLabel="Готово" max={new Date().toISOString().slice(0, 10)} />
         </FieldGroup>
+        <Textarea aria-label="Textarea" placeholder="Textarea: комментарий к тренировке" />
         <label htmlFor="sc-ok" className="flex min-h-11 items-center gap-3">
           <Checkbox id="sc-ok" checked={ok} onCheckedChange={(v) => setOk(v === true)} /> Чекбокс
         </label>
@@ -153,6 +156,9 @@ export function Showcase() {
               <Button variant="destructive">Удалить</Button>
             </DialogContent>
           </Dialog>
+          <Button variant="secondary" onClick={() => void askConfirm('Удалить программу?')}>
+            askConfirm
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" aria-label="Подсказка">

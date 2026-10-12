@@ -26,7 +26,7 @@ describe('ИИ-прокси', () => {
   it('неизвестная задача 404, ещё не перенесённая 501', async () => {
     const { call } = setup();
     expect((await call('poem')).s).toBe(404);
-    expect((await call('workout_ai')).s).toBe(501);
+    expect((await call('plan_ai')).s).toBe(501);
   });
   it('еда по тексту: JSON-ответ, учёт задач и токенов', async () => {
     const { call, repo, provider } = setup();
@@ -180,5 +180,20 @@ describe('блюда из книги рецептов', () => {
   it('чужой или несуществующий рецепт: 404', async () => {
     const { call } = setup();
     expect((await call('food_portion', { recId: 'nope' })).s).toBe(404);
+  });
+  it('AI-тренер: промпт прототипа, только упражнения из базы, лимит trainer', async () => {
+    const { call, repo, provider } = setup();
+    await repo.put(PROFILE);
+    const r = await call('workout_ai', { place: 'home', lvl: 'beginner', days: 2, eq: ['dumbbell'], wish: '', lang: 'ru' });
+    expect(r.s).toBe(200);
+    expect(r.b.result.days).toEqual([
+      { name: 'День 1: Верх тела', items: [{ id: 'Pushups', sets: 3, reps: '8-12' }, { id: 'Pullups', sets: 3, reps: '5-8' }] },
+      { name: 'День 2: Ноги и пресс', items: [{ id: 'Bodyweight_Squat', sets: 3, reps: '15' }, { id: 'Plank', sets: 3, reps: '30-60' }] },
+    ]);
+    const prompt = provider!.calls[0]!.prompt;
+    expect(prompt).toContain('Клиент: мужчина, 30 лет, 80 кг. Цель: поддержание. Уровень: Новичок. Где тренируется: дома. Инвентарь дома: Гантели. Используй только этот инвентарь. Тренировок в неделю: 2.');
+    expect(prompt).toContain('Pushups|Pushups|chest');
+    expect(prompt).not.toContain('Barbell_Deadlift|');
+    expect((await repo.get('USER#u1', 'USAGE#2026-10-12'))?.c).toEqual({ trainer: 1 });
   });
 });

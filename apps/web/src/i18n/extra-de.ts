@@ -33,4 +33,11 @@ export const extraDe: Record<string, string> = {
   'без фиников, скира на 20% меньше': 'ohne Datteln, 20% weniger Skyr',
   'средняя': 'mittel',
   'Режим': 'Modus',
+  'Группа мышц': 'Muskelgruppe',
+  'Оборудование': 'Ausrüstung',
+  'Название программы': 'Name des Programms',
+  'Выше': 'Nach oben',
+  'Ниже': 'Nach unten',
+  'Название тренировки': 'Name des Trainings',
+  'Убрать подход': 'Satz entfernen',
 };

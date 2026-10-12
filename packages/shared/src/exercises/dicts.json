@@ -1,0 +1,414 @@
+{
+ "DICT": {
+  "abdominals": [
+   "Пресс",
+   "Bauch"
+  ],
+  "hamstrings": [
+   "Бицепс бедра",
+   "Beinbeuger"
+  ],
+  "calves": [
+   "Икры",
+   "Waden"
+  ],
+  "shoulders": [
+   "Плечи",
+   "Schultern"
+  ],
+  "adductors": [
+   "Приводящие",
+   "Adduktoren"
+  ],
+  "glutes": [
+   "Ягодицы",
+   "Gesäß"
+  ],
+  "quadriceps": [
+   "Квадрицепс",
+   "Quadrizeps"
+  ],
+  "biceps": [
+   "Бицепс",
+   "Bizeps"
+  ],
+  "forearms": [
+   "Предплечья",
+   "Unterarme"
+  ],
+  "abductors": [
+   "Отводящие",
+   "Abduktoren"
+  ],
+  "triceps": [
+   "Трицепс",
+   "Trizeps"
+  ],
+  "chest": [
+   "Грудь",
+   "Brust"
+  ],
+  "lower back": [
+   "Поясница",
+   "Unterer Rücken"
+  ],
+  "traps": [
+   "Трапеции",
+   "Trapez"
+  ],
+  "middle back": [
+   "Середина спины",
+   "Mittlerer Rücken"
+  ],
+  "lats": [
+   "Широчайшие",
+   "Latissimus"
+  ],
+  "neck": [
+   "Шея",
+   "Nacken"
+  ],
+  "body only": [
+   "Свой вес",
+   "Körpergewicht"
+  ],
+  "barbell": [
+   "Штанга",
+   "Langhantel"
+  ],
+  "dumbbell": [
+   "Гантели",
+   "Kurzhanteln"
+  ],
+  "cable": [
+   "Блок",
+   "Kabelzug"
+  ],
+  "machine": [
+   "Тренажер",
+   "Maschine"
+  ],
+  "kettlebells": [
+   "Гири",
+   "Kettlebells"
+  ],
+  "bands": [
+   "Резинки",
+   "Bänder"
+  ],
+  "e-z curl bar": [
+   "EZ-гриф",
+   "SZ-Stange"
+  ],
+  "exercise ball": [
+   "Фитбол",
+   "Gymnastikball"
+  ],
+  "medicine ball": [
+   "Медбол",
+   "Medizinball"
+  ],
+  "foam roll": [
+   "Ролл",
+   "Faszienrolle"
+  ],
+  "other": [
+   "Другое",
+   "Sonstiges"
+  ],
+  "strength": [
+   "Силовые",
+   "Kraft"
+  ],
+  "stretching": [
+   "Растяжка",
+   "Dehnen"
+  ],
+  "plyometrics": [
+   "Плиометрика",
+   "Plyometrie"
+  ],
+  "powerlifting": [
+   "Пауэрлифтинг",
+   "Powerlifting"
+  ],
+  "olympic weightlifting": [
+   "Тяжелая атлетика",
+   "Gewichtheben"
+  ],
+  "strongman": [
+   "Стронгмен",
+   "Strongman"
+  ],
+  "cardio": [
+   "Кардио",
+   "Cardio"
+  ],
+  "beginner": [
+   "Новичок",
+   "Anfänger"
+  ],
+  "intermediate": [
+   "Средний",
+   "Fortgeschritten"
+  ],
+  "expert": [
+   "Продвинутый",
+   "Profi"
+  ]
+ },
+ "PRE": {
+  "Pushups": [
+   "Отжимания",
+   "Liegestütze"
+  ],
+  "Pullups": [
+   "Подтягивания",
+   "Klimmzüge"
+  ],
+  "Barbell_Full_Squat": [
+   "Приседания со штангой",
+   "Kniebeuge mit Langhantel"
+  ],
+  "Barbell_Deadlift": [
+   "Становая тяга",
+   "Kreuzheben"
+  ],
+  "Barbell_Bench_Press_-_Medium_Grip": [
+   "Жим штанги лежа",
+   "Bankdrücken"
+  ],
+  "Dips_-_Chest_Version": [
+   "Отжимания на брусьях (грудь)",
+   "Dips (Brust)"
+  ],
+  "Standing_Military_Press": [
+   "Армейский жим стоя",
+   "Schulterdrücken stehend"
+  ],
+  "Bent_Over_Barbell_Row": [
+   "Тяга штанги в наклоне",
+   "Vorgebeugtes Rudern"
+  ],
+  "Plank": [
+   "Планка",
+   "Unterarmstütz"
+  ],
+  "Bodyweight_Squat": [
+   "Приседания без веса",
+   "Kniebeuge ohne Gewicht"
+  ],
+  "Chin-Up": [
+   "Подтягивания обратным хватом",
+   "Klimmzüge im Untergriff"
+  ],
+  "Dips_-_Triceps_Version": [
+   "Отжимания на брусьях (трицепс)",
+   "Dips (Trizeps)"
+  ],
+  "Dumbbell_Lunges": [
+   "Выпады с гантелями",
+   "Ausfallschritte mit Kurzhanteln"
+  ],
+  "Hanging_Leg_Raise": [
+   "Подъем ног в висе",
+   "Hängendes Beinheben"
+  ],
+  "Inverted_Row": [
+   "Австралийские подтягивания",
+   "Australische Klimmzüge"
+  ],
+  "Romanian_Deadlift": [
+   "Румынская тяга",
+   "Rumänisches Kreuzheben"
+  ],
+  "Dumbbell_Bench_Press": [
+   "Жим гантелей лежа",
+   "Kurzhantel-Bankdrücken"
+  ],
+  "Wide-Grip_Lat_Pulldown": [
+   "Тяга верхнего блока широким хватом",
+   "Latziehen breit"
+  ],
+  "Barbell_Curl": [
+   "Подъем штанги на бицепс",
+   "Langhantel-Curls"
+  ],
+  "Seated_Cable_Rows": [
+   "Тяга нижнего блока сидя",
+   "Rudern am Kabelzug"
+  ],
+  "Leg_Press": [
+   "Жим ногами",
+   "Beinpresse"
+  ],
+  "Crunches": [
+   "Скручивания",
+   "Crunches"
+  ],
+  "Side_Bridge": [
+   "Боковая планка",
+   "Seitstütz"
+  ],
+  "Muscle_Up": [
+   "Выход силой",
+   "Muscle-Up"
+  ],
+  "Handstand_Push-Ups": [
+   "Отжимания в стойке на руках",
+   "Handstand-Liegestütze"
+  ]
+ },
+ "GROUPS": [
+  [
+   "all",
+   "Все",
+   null
+  ],
+  [
+   "chest",
+   "Грудь",
+   [
+    "chest"
+   ]
+  ],
+  [
+   "back",
+   "Спина",
+   [
+    "lats",
+    "middle back",
+    "lower back",
+    "traps"
+   ]
+  ],
+  [
+   "sh",
+   "Плечи",
+   [
+    "shoulders"
+   ]
+  ],
+  [
+   "arms",
+   "Руки",
+   [
+    "biceps",
+    "triceps",
+    "forearms"
+   ]
+  ],
+  [
+   "legs",
+   "Ноги",
+   [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves",
+    "adductors",
+    "abductors"
+   ]
+  ],
+  [
+   "abs",
+   "Пресс",
+   [
+    "abdominals"
+   ]
+  ]
+ ],
+ "EQ": [
+  [
+   "all",
+   "Любое"
+  ],
+  [
+   "body only",
+   "Свой вес"
+  ],
+  [
+   "barbell",
+   "Штанга"
+  ],
+  [
+   "dumbbell",
+   "Гантели"
+  ],
+  [
+   "cable",
+   "Блок"
+  ],
+  [
+   "machine",
+   "Тренажер"
+  ],
+  [
+   "kettlebells",
+   "Гири"
+  ],
+  [
+   "bands",
+   "Резинки"
+  ]
+ ],
+ "WTAGS": [
+  [
+   "pain",
+   "🤕",
+   "боль"
+  ],
+  [
+   "easy",
+   "🙂",
+   "легко"
+  ],
+  [
+   "hard",
+   "🥵",
+   "тяжело"
+  ],
+  [
+   "tech",
+   "🎯",
+   "техника"
+  ]
+ ],
+ "AI_EQ": [
+  [
+   "none",
+   "Ничего, свой вес",
+   "body only"
+  ],
+  [
+   "dumbbell",
+   "Гантели",
+   "dumbbell"
+  ],
+  [
+   "kettlebells",
+   "Гиря",
+   "kettlebells"
+  ],
+  [
+   "bands",
+   "Резинки",
+   "bands"
+  ],
+  [
+   "bar",
+   "Турник",
+   "other"
+  ],
+  [
+   "ball",
+   "Фитбол",
+   "exercise ball"
+  ],
+  [
+   "bench",
+   "Скамья",
+   "other"
+  ]
+ ]
+}

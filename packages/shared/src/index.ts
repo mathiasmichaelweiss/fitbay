@@ -105,3 +105,67 @@ export interface Measure {
   weight?: number;
   waist?: number;
 }
+
+/** Подход в истории тренировки (r повторы, w кг, d выполнен). */
+export interface WorkoutSet {
+  r: number;
+  w: number;
+  d: true;
+}
+export interface WorkoutItem {
+  id: string;
+  name: string;
+  sets: WorkoutSet[];
+  tags?: string[];
+  note?: string;
+}
+export interface PlanItem {
+  id: string;
+  sets: number;
+  reps: string;
+  kg?: number;
+}
+/** Тренировка в истории (type "workout" прототипа). */
+export interface Workout {
+  id: string;
+  date: string;
+  start: number;
+  end: number;
+  title: string;
+  items: WorkoutItem[];
+  tags?: string[];
+  note?: string;
+  plan?: { name?: string; week?: number; items: PlanItem[] };
+  progId?: string | null;
+  kcal?: number;
+}
+export interface ProgramItem {
+  id: string;
+  sets: number;
+  reps: string;
+  w?: number | string | null;
+}
+/** Программа (type "program" прототипа). src: me | ai | trainer. */
+export interface Program {
+  id: string;
+  date: string;
+  name: string;
+  items: ProgramItem[];
+  src?: 'me' | 'ai' | 'trainer';
+  at: number;
+  plan?: Workout['plan'];
+}
+/** Идущая тренировка (wo-active прототипа). */
+export interface ActiveWorkout {
+  title: string;
+  start: number;
+  end?: number;
+  progId: string | null;
+  plan?: Workout['plan'];
+  items: { id: string; target: string; sets: { r: string; w: string; d: boolean }[]; tags?: string[]; note?: string; noteOpen?: boolean }[];
+  tags?: string[];
+  note?: string;
+  noteOpen?: boolean;
+  /** редактирование тренировки из истории */
+  editId?: string;
+}

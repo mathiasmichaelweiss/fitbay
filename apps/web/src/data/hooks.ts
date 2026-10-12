@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Checkin, Meal, Measure, Profile, Recipe } from '@fitbay/shared';
+import type { ActiveWorkout, Checkin, Meal, Measure, Profile, Program, Recipe, Workout } from '@fitbay/shared';
 import { target, sum, type CalcProfile, type MacroSum, type Target } from '@fitbay/calc';
 import { api, type Collection } from './api';
 
@@ -70,3 +70,22 @@ export const shiftDay = (date: string, n: number) => {
 /** Сохранённый совет коуча на день (COACH#<дата>). */
 export const useCoach = (date: string) =>
   useQuery({ queryKey: ['coach', date], queryFn: () => api.call<{ text: string; key: string; at: number } | null>('GET', `/me/coach/${date}`).catch(() => null) });
+
+/** Тренировки: история по убыванию окончания, программы по времени создания (initTrain прототипа). */
+export const useWorkouts = () =>
+  useQuery({ queryKey: ['workouts'], queryFn: async () => (await api.list<Workout>('workouts')).sort((a, b) => b.end - a.end) });
+export const useWorkoutOps = () => useCol<Workout>('workouts');
+export const usePrograms = () =>
+  useQuery({ queryKey: ['programs'], queryFn: async () => (await api.list<Program>('programs')).sort((a, b) => (a.at || 0) - (b.at || 0)) });
+export const useProgramOps = () => useCol<Program>('programs');
+/** Сохраненная идущая тренировка (wo-active). {none:true} значит, что ее нет. */
+export const loadActive = async (): Promise<ActiveWorkout | null> => {
+  const d = await api.getOne<ActiveWorkout & { none?: boolean }>('active-workout');
+  if (!d || d.none) return null;
+  const rest: Record<string, unknown> = { ...d };
+  delete rest.id;
+  delete rest.createdAt;
+  delete rest.updatedAt;
+  return rest as unknown as ActiveWorkout;
+};
+export const saveActiveRemote = (a: ActiveWorkout | null) => api.putOne('active-workout', a ?? { none: true });

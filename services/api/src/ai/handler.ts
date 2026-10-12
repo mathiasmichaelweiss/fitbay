@@ -1,16 +1,17 @@
-import { age, mealsKey, target, type CalcProfile, type MealT } from '@fitbay/calc';
+import { age, aiCandidates, mealsKey, target, type CalcProfile, type MealT } from '@fitbay/calc';
 import type { AiTask } from '@fitbay/shared';
 import { DynamoRepo, type Item, type Repo } from '../lib/repo';
 import { body, caller, handle, HttpError, json, type Event, type Result } from '../lib/http';
 import { communityHint, personalCorrections } from '../corrections/handler';
 import { communityHintText, personalHintText } from '../prompts/hints';
-import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt } from './prompts';
+import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt, workoutPrompt } from './prompts';
+import { AI_EQ, D, EX, EXM } from '@fitbay/shared/exercises';
 import { AiError, MockProvider, OpenAIProvider, parseJson, type Provider } from './provider';
 import { AIMSG, KIND, LIMITS } from './limits';
 import { JSON_TASKS, modelFor } from './config';
 
 /** Задачи, промпты которых уже перенесены. Остальные появятся вместе с их экранами (A3.4 тренировки, A4.3 план). */
-export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach'];
+export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai'];
 const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr'];
 const UNAVAILABLE = 'ИИ недоступен в этом окне.';
 const DAY = 864e5;
@@ -131,6 +132,30 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
           week,
           lang,
         });
+      } else if (task === 'workout_ai') {
+        if (!prof) throw new HttpError(400, 'profile required');
+        const place = (['gym', 'street', 'home'] as const).find((x) => x === b.place) ?? 'gym';
+        const lvl = (['beginner', 'intermediate', 'expert'] as const).find((x) => x === b.lvl) ?? 'beginner';
+        const days = Math.min(5, Math.max(2, Number(b.days) || 3));
+        const eqKeys = (Array.isArray(b.eq) ? b.eq : ['none']).filter((k): k is string => AI_EQ.some((x) => x[0] === k));
+        const wish = typeof b.wish === 'string' ? b.wish.trim().slice(0, 1000) : '';
+        const eqRows = eqKeys.flatMap((k) => AI_EQ.filter((x) => x[0] === k));
+        const homeEq = eqRows.map((x) => x[2]);
+        const cand = aiCandidates(EX, place, lvl, homeEq, wish);
+        const p = prof as unknown as CalcProfile;
+        prompt = workoutPrompt({
+          sex: p.sex,
+          age: p.birth ? age(p.birth, day) : (p.age ?? 30),
+          w: p.w,
+          goal: p.goal,
+          lvlName: D(lvl, lang),
+          place,
+          homeEq: eqRows.map((x) => x[1]),
+          days,
+          wish,
+          cand: cand.map((e) => `${e.i}|${e.n}|${e.p.join(',')}`),
+          lang,
+        });
       }
 
       const model = await modelFor(repo, task);
@@ -155,6 +180,21 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
         const text = out.text.replace(/\s*[—–]\s*/g, ', ').trim(); // как в прототипе: без длинного тире
         await repo.put({ PK: U(who.uid), SK: `COACH#${day}`, text, key: coachKey, at: now() });
         return json(200, { text });
+      }
+      if (task === 'workout_ai') {
+        // Как в прототипе: только известные упражнения, пустые дни отбрасываются.
+        const r = (() => {
+          try {
+            return parseJson(out.text) as { days?: { name?: string; exercises?: { id?: string; sets?: unknown; reps?: unknown }[] }[]; note?: string };
+          } catch {
+            return {};
+          }
+        })();
+        const days = (r.days ?? [])
+          .map((d) => ({ name: String(d.name ?? ''), items: (d.exercises ?? []).flatMap((x) => (x.id && EXM[x.id] ? [{ ...x, id: x.id }] : [])).map((x) => ({ id: x.id, sets: +(x.sets as number) || 3, reps: String(x.reps ?? '') })) }))
+          .filter((d) => d.items.length);
+        if (!days.length) throw new HttpError(502, 'Не получилось составить программу, попробуй еще раз.');
+        return json(200, { result: { days, note: String(r.note ?? '') } });
       }
       try {
         return json(200, { result: parseJson(out.text), ...(task === 'food_photo' && !images ? { imageSkipped: true } : {}) });

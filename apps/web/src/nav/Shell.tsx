@@ -12,6 +12,8 @@ import { SingleToggle } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { today, useProfile } from '@/data/hooks';
 import { Today } from '@/screens/Today';
+import { Train } from '@/screens/train/Train';
+import { WoBar } from '@/screens/train/WorkoutSheet';
 import { useNav, type CabView, type Mode } from './store';
 
 /** Иконки .top и NAVI прототипа (svg дословно). */
@@ -63,7 +65,7 @@ function ModeSw({ tabs, mode, onChange }: { tabs: [Mode, string][]; mode: Mode; 
             {NAVI[k]}
             <span
               className={cn(
-                'inline-block -ml-2 max-w-0 -translate-x-1.5 opacity-0 transition-[max-width,opacity,transform] duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none',
+                'inline-block -ml-2 max-w-0 -translate-x-1.5 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity,transform] duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none',
                 on && 'ml-2 max-w-[140px] translate-x-0 opacity-100',
               )}
             >
@@ -92,6 +94,7 @@ export function Shell() {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-[520px] px-[14px] pb-[calc(24px+env(safe-area-inset-bottom))] pt-[14px]">
+      <WoBar />
       {/* .top прототипа */}
       <header className="mx-1 mb-3.5 mt-1 flex items-center justify-between gap-2">
         <button
@@ -123,9 +126,7 @@ export function Shell() {
         {m === 'food' ? (
           <Today date={day} />
         ) : m === 'train' ? (
-          <Tiles>
-            <Tile full color="dark" label={t('Тренировки')} title={t('Скоро здесь будет раздел')} />
-          </Tiles>
+          <Train />
         ) : (
           <div data-testid="clients">
             <div className="mb-3">
