@@ -1,0 +1,8 @@
+{
+  "name": "@fitbay/infra",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": { "cdk": "cdk", "synth": "cdk synth", "deploy:beta": "cdk deploy FitBayBetaStack", "typecheck": "tsc --noEmit" },
+  "dependencies": { "aws-cdk-lib": "^2.160.0", "constructs": "^10.3.0" },
+  "devDependencies": { "aws-cdk": "^2.160.0", "tsx": "^4.19.0", "@types/node": "^20.16.0" }
+}

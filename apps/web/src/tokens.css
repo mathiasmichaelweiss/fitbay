@@ -1,0 +1,13 @@
+/* Дизайн-токены из прототипа (A0.2 дополнит радиусы и компоненты). */
+:root {
+  --orange: #ff5a0a;
+  --yellow: #f2b705;
+  --teal: #5bc0be;
+  --bg: #0f1115;
+  --fg: #f4f4f5;
+  --font: 'Onest', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); overflow-x: hidden; }
+input, select, textarea { font-size: 16px; }
+body { padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
