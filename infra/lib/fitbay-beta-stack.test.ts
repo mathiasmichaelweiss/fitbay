@@ -81,4 +81,11 @@ describe('API и авторизация', () => {
     expect(keys).toContain('GET /users/{uid}/{entity}');
     expect(keys).toContain('DELETE /me');
   });
+
+  it('маршруты тренера из общей таблицы', () => {
+    const keys = routes.map((r) => r.RouteKey);
+    expect(keys).toContain('POST /trainers/{tid}/slots/{id}/book');
+    expect(keys).toContain('POST /trainer/requests/{id}/adjust');
+    expect(keys).toContain('GET /trainer/overview');
+  });
 });

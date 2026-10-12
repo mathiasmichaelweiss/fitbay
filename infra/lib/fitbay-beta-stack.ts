@@ -8,6 +8,7 @@ import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations
 import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import type { Construct } from 'constructs';
 import * as path from 'node:path';
+import { ROUTES } from '../../services/api/src/routes';
 
 export interface FitBayStackProps extends StackProps {
   /** Префикс всех физических имён. В блоке A живём в аккаунте BewerGO, поэтому строго `fitbay-`. */
@@ -80,29 +81,26 @@ export class FitBayBetaStack extends Stack {
       resultsCacheTtl: Duration.minutes(5),
     });
 
-    // A2.3: API пользователя. Пишет только в fitbay-main.
+    // Обработчики API. Маршруты берутся из общей таблицы services/api/src/routes.ts (та же, что у локального сервера).
     const userFn = fn('UserFn', 'api-user', 'user/handler.ts');
+    const trainerFn = fn('TrainerFn', 'api-trainer', 'trainer/handler.ts');
     main.grantReadWriteData(userFn);
+    main.grantReadWriteData(trainerFn);
 
     const api = new HttpApi(this, 'Api', {
       apiName: `${prefix}-api`,
       corsPreflight: { allowOrigins: origins, allowMethods: [CorsHttpMethod.ANY], allowHeaders: ['authorization', 'content-type'] },
     });
-    api.addRoutes({ path: '/health', methods: [HttpMethod.GET], integration: new HttpLambdaIntegration('HealthInt', health) });
-
-    const userInt = new HttpLambdaIntegration('UserInt', userFn);
-    const crud = [HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE];
-    const routes: [string, HttpMethod[]][] = [
-      ['/me', [HttpMethod.DELETE]],
-      ['/me/export', [HttpMethod.GET]],
-      ['/me/{entity}', crud],
-      ['/me/{entity}/{id}', crud],
-      ['/users/{uid}', [HttpMethod.DELETE]],
-      ['/users/{uid}/export', [HttpMethod.GET]],
-      ['/users/{uid}/{entity}', crud],
-      ['/users/{uid}/{entity}/{id}', crud],
-    ];
-    for (const [p, methods] of routes) api.addRoutes({ path: p, methods, integration: userInt, authorizer });
+    const integrations = {
+      health: new HttpLambdaIntegration('HealthInt', health),
+      user: new HttpLambdaIntegration('UserInt', userFn),
+      trainer: new HttpLambdaIntegration('TrainerInt', trainerFn),
+    } as const;
+    for (const r of ROUTES) {
+      const integration = integrations[r.handler as keyof typeof integrations];
+      if (!integration) continue; // обработчик ещё не готов (ИИ, поправки) и появится в следующих задачах
+      api.addRoutes({ path: r.path, methods: [r.method as HttpMethod], integration, ...(r.auth === false ? {} : { authorizer }) });
+    }
 
     new CfnOutput(this, 'ApiUrl', { value: api.apiEndpoint });
     new CfnOutput(this, 'MainTable', { value: main.tableName });

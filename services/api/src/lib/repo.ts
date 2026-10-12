@@ -17,7 +17,32 @@ export interface Repo {
   delete(pk: string, sk: string): Promise<void>;
   /** Все записи PK, SK начинается с prefix; from/to ограничивают SK (включительно). */
   query(pk: string, opts?: { prefix?: string; from?: string; to?: string; limit?: number }): Promise<Item[]>;
+  /** Запрос по GSI (GSI1: записи клиента, GSI2: каталог, GSI3: код партнёра). */
+  queryIndex(index: 'GSI1' | 'GSI2' | 'GSI3', pk: string, opts?: { prefix?: string }): Promise<Item[]>;
+  /**
+   * Условная запись: put выполняется, только если условие верно на момент записи (атомарно).
+   * Иначе бросает ConditionFailed. Это защита от двойной брони (спека 5.3).
+   */
+  putIf(item: Item, cond: Cond): Promise<void>;
 }
+
+/** Условие для putIf: запись должна существовать или нет, поле должно быть пустым или равным значению. */
+export interface Cond {
+  exists?: boolean;
+  /** Поле отсутствует или null. */
+  empty?: string;
+  /** Поле равно значению. */
+  eq?: [string, unknown];
+}
+export class ConditionFailed extends Error {
+  constructor() {
+    super('condition failed');
+  }
+}
+const condOk = (cur: Item | undefined, c: Cond) =>
+  (c.exists === undefined || c.exists === !!cur) &&
+  (c.empty === undefined || cur?.[c.empty] === undefined || cur?.[c.empty] === null) &&
+  (c.eq === undefined || cur?.[c.eq[0]] === c.eq[1]);
 
 export class DynamoRepo implements Repo {
   private doc: DynamoDBDocumentClient;
@@ -61,6 +86,55 @@ export class DynamoRepo implements Repo {
     return out;
   }
 
+  async queryIndex(index: 'GSI1' | 'GSI2' | 'GSI3', pk: string, opts: { prefix?: string } = {}) {
+    const values: Record<string, string> = { ':pk': pk };
+    let cond = `${index}PK = :pk`;
+    if (opts.prefix) {
+      values[':p'] = opts.prefix;
+      cond += ` AND begins_with(${index}SK, :p)`;
+    }
+    const out: Item[] = [];
+    let start: Record<string, unknown> | undefined;
+    do {
+      const r = await this.doc.send(new QueryCommand({ TableName: this.table, IndexName: index, KeyConditionExpression: cond, ExpressionAttributeValues: values, ExclusiveStartKey: start }));
+      out.push(...((r.Items ?? []) as Item[]));
+      start = r.LastEvaluatedKey;
+    } while (start);
+    return out;
+  }
+
+  async putIf(item: Item, c: Cond) {
+    const parts: string[] = [];
+    const names: Record<string, string> = {};
+    const values: Record<string, unknown> = {};
+    if (c.exists === true) parts.push('attribute_exists(PK)');
+    if (c.exists === false) parts.push('attribute_not_exists(PK)');
+    if (c.empty) {
+      names['#e'] = c.empty;
+      values[':null'] = null;
+      parts.push('(attribute_not_exists(#e) OR #e = :null)');
+    }
+    if (c.eq) {
+      names['#q'] = c.eq[0];
+      values[':q'] = c.eq[1];
+      parts.push('#q = :q');
+    }
+    try {
+      await this.doc.send(
+        new PutCommand({
+          TableName: this.table,
+          Item: item,
+          ConditionExpression: parts.join(' AND ') || undefined,
+          ExpressionAttributeNames: Object.keys(names).length ? names : undefined,
+          ExpressionAttributeValues: Object.keys(values).length ? values : undefined,
+        }),
+      );
+    } catch (e) {
+      if ((e as Error).name === 'ConditionalCheckFailedException') throw new ConditionFailed();
+      throw e;
+    }
+  }
+
   /** Удаление пачками по 25 (для «удалить аккаунт»). */
   async deleteMany(keys: { PK: string; SK: string }[]) {
     for (let i = 0; i < keys.length; i += 25) {
@@ -73,7 +147,7 @@ export class DynamoRepo implements Repo {
 /** In-memory реализация для тестов и локальной разработки. */
 export class MemoryRepo implements Repo {
   items = new Map<string, Item>();
-  private k = (pk: string, sk: string) => `${pk}\u0000${sk}`;
+  protected k = (pk: string, sk: string) => `${pk}\u0000${sk}`;
   async get(pk: string, sk: string) {
     const i = this.items.get(this.k(pk, sk));
     return i && structuredClone(i);
@@ -93,4 +167,20 @@ export class MemoryRepo implements Repo {
       .map((i) => structuredClone(i));
     return opts.limit ? res.slice(0, opts.limit) : res;
   }
+  async queryIndex(index: 'GSI1' | 'GSI2' | 'GSI3', pk: string, opts: { prefix?: string } = {}) {
+    return [...this.items.values()]
+      .filter((i) => i[`${index}PK`] === pk && (!opts.prefix || String(i[`${index}SK`] ?? '').startsWith(opts.prefix)))
+      .sort((a, b) => (String(a[`${index}SK`]) < String(b[`${index}SK`]) ? -1 : 1))
+      .map((i) => structuredClone(i));
+  }
+  /** Проверка и запись без await между ними: в одном процессе Node это атомарно, как conditional write в DynamoDB. */
+  putIf(item: Item, c: Cond): Promise<void> {
+    const cur = this.items.get(this.k(item.PK, item.SK));
+    if (!condOk(cur, c)) return Promise.reject(new ConditionFailed());
+    this.items.set(this.k(item.PK, item.SK), structuredClone(item));
+    this.afterWrite();
+    return Promise.resolve();
+  }
+  /** Хук для FileRepo (сохранение на диск). */
+  protected afterWrite() {}
 }

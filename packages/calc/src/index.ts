@@ -219,3 +219,122 @@ export function ciBad(list: CheckinValues[], today: string): boolean {
   const days = (new Date(`${r[2]!.date}T12:00:00`).getTime() - new Date(`${r[0]!.date}T12:00:00`).getTime()) / 864e5;
   return days <= 4 && r.every((x) => ciAvg(x) <= 2.5) && r[2]!.date >= shiftDay(today, -2);
 }
+
+/* ---- пакеты тренера (pkgSessDefault, pkgUsage, priceNum, renderFin прототипа) ---- */
+const DAY = 864e5;
+
+export interface PkgCfg {
+  freq?: number;
+  months?: number;
+}
+export interface PkgRequest {
+  uid: string;
+  trainer: string;
+  name?: string;
+  status: 'new' | 'accepted' | 'declined' | string;
+  pkg?: { id?: string; name?: string; price?: string; cfg?: PkgCfg };
+  sessions?: { total?: number };
+  /** Ручные списания (+) и возвраты (−) тренером. */
+  adj?: number;
+  at?: number;
+  answeredAt?: number;
+}
+export interface SlotLike {
+  trainer: string;
+  start: number; // ms
+  dur?: number; // мин
+  bookedBy?: string | null;
+  burned?: { at: number } | null;
+}
+export interface Usage {
+  tot: number;
+  used: number;
+  left: number;
+  pct: number;
+}
+
+/** Сколько занятий в пакете по умолчанию: частота × месяцы × 4.33 или число из названия («10 Einheiten»). */
+export function pkgSessDefault(r: Pick<PkgRequest, 'pkg'>): number {
+  const c = r.pkg?.cfg;
+  if (c?.freq) return Math.round(c.freq * (c.months || 1) * 4.33);
+  const m = String(r.pkg?.name ?? '').match(/(\d+)\s*(трен|занят|сесс|Train|Einheit|Session|×|x)/i);
+  return m ? +m[1]! : 1;
+}
+
+/**
+ * Счётчик пакета. Занятие считается, если оно прошло (start + dur ≤ now) или сгорело,
+ * клиента и тренера этого пакета, не раньше чем за сутки до принятия пакета; плюс ручные списания.
+ */
+export function pkgUsage(r: PkgRequest, slots: SlotLike[], now: number): Usage | null {
+  const tot = +(r.sessions?.total ?? 0) || 0;
+  if (r.status !== 'accepted' || !tot) return null;
+  const from = r.answeredAt || r.at || 0;
+  const done = slots.filter((x) => x.bookedBy === r.uid && x.trainer === r.trainer && x.start >= from - DAY && (x.burned || x.start + (x.dur || 60) * 6e4 <= now)).length;
+  const used = Math.max(0, done + (+(r.adj ?? 0) || 0));
+  return { tot, used, left: Math.max(0, tot - used), pct: Math.min(1, used / tot) };
+}
+
+/** Цена из строки «1 200,50 €» → 1200.5. */
+export function priceNum(x: unknown): number {
+  const m = String(x ?? '').replace(/\s/g, '').replace(',', '.').match(/\d+(\.\d+)?/);
+  return m ? +m[0] : 0;
+}
+
+/** Отмена клиентом позже чем за 24 часа: занятие сгорает и списывается из пакета. */
+export const isLateCancel = (start: number, now: number) => start - now < DAY;
+
+/** Комиссия FitBay для тренера-одиночки (спека 4.6); партнёр без комиссии. Ступени студий в B5.3. */
+export const COMMISSION_SOLO = 0.125;
+
+export interface FinOverview {
+  revenue: number; // за текущий месяц
+  revenuePrev: number;
+  net: number; // за вычетом комиссии
+  commission: number;
+  months: { m: number; v: number }[]; // 6 месяцев, m = год*12+месяц
+  done: number;
+  donePrev: number;
+  burned: number;
+  activeClients: number;
+  clients: number;
+  prepaid: number; // оплачено, но ещё не проведено
+  ending: { r: PkgRequest; u: Usage }[];
+  all: { r: PkgRequest; u: Usage }[];
+  top: [string, number][];
+}
+
+/** Обзор денег тренера (renderFin прототипа). clients: updatedAt клиентов для «активные за 14 дней». */
+export function finOverview(reqs: PkgRequest[], slots: SlotLike[], clients: { updatedAt?: number }[], partner: boolean, now: number): FinOverview {
+  const mk = (t: number) => {
+    const x = new Date(t);
+    return x.getFullYear() * 12 + x.getMonth();
+  };
+  const cur = mk(now);
+  const A = reqs.filter((r) => r.status === 'accepted');
+  const commission = partner ? 0 : COMMISSION_SOLO;
+  const rev = (m: number) => A.filter((r) => mk(r.answeredAt || r.at || 0) === m).reduce((a, r) => a + priceNum(r.pkg?.price), 0);
+  const months = Array.from({ length: 6 }, (_, i) => cur - 5 + i).map((m) => ({ m, v: rev(m) }));
+  const done = (m: number) => slots.filter((x) => x.bookedBy && mk(x.start) === m && x.start + (x.dur || 60) * 6e4 <= now && !x.burned).length;
+  const burned = slots.filter((x) => x.burned && mk(x.start) === cur).length;
+  const all = A.map((r) => ({ r, u: pkgUsage(r, slots, now) })).filter((x): x is { r: PkgRequest; u: Usage } => !!x.u);
+  const ending = all.filter((x) => x.u.left <= 2).sort((a, b) => a.u.left - b.u.left);
+  const by: Record<string, number> = {};
+  for (const r of A) by[r.name || '?'] = (by[r.name || '?'] || 0) + priceNum(r.pkg?.price);
+  const revenue = rev(cur);
+  return {
+    revenue,
+    revenuePrev: rev(cur - 1),
+    net: revenue * (1 - commission),
+    commission,
+    months,
+    done: done(cur),
+    donePrev: done(cur - 1),
+    burned,
+    activeClients: clients.filter((c) => (c.updatedAt || 0) > now - 14 * DAY).length,
+    clients: clients.length,
+    prepaid: all.reduce((a, x) => a + x.u.left, 0),
+    ending,
+    all,
+    top: Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 5),
+  };
+}

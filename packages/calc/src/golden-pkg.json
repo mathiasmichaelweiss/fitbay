@@ -1,0 +1,444 @@
+{
+ "now": 1791806400000,
+ "sessDefault": [
+  [
+   {
+    "pkg": {
+     "cfg": {
+      "freq": 2,
+      "months": 3
+     }
+    }
+   },
+   26
+  ],
+  [
+   {
+    "pkg": {
+     "cfg": {
+      "freq": 1
+     }
+    }
+   },
+   4
+  ],
+  [
+   {
+    "pkg": {
+     "name": "Personal Training, 10 Einheiten"
+    }
+   },
+   10
+  ],
+  [
+   {
+    "pkg": {
+     "name": "Технік: 5 тренировок"
+    }
+   },
+   5
+  ],
+  [
+   {
+    "pkg": {
+     "name": "Технік-чек 3 занятия"
+    }
+   },
+   3
+  ],
+  [
+   {
+    "pkg": {
+     "name": "Пакет без числа"
+    }
+   },
+   1
+  ],
+  [
+   {
+    "pkg": {
+     "name": "8x Online"
+    }
+   },
+   8
+  ],
+  [
+   {},
+   1
+  ]
+ ],
+ "usage": [
+  {
+   "name": "пусто",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [],
+   "expected": {
+    "tot": 10,
+    "used": 0,
+    "left": 10,
+    "pct": 0
+   }
+  },
+  {
+   "name": "два прошедших",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791374400000
+    },
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791633600000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 2,
+    "left": 8,
+    "pct": 0.2
+   }
+  },
+  {
+   "name": "будущее не считается",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791892800000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 0,
+    "left": 10,
+    "pct": 0
+   }
+  },
+  {
+   "name": "идёт сейчас не считается",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791804600000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 0,
+    "left": 10,
+    "pct": 0
+   }
+  },
+  {
+   "name": "сгоревшее будущее считается",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791824400000,
+     "burned": {
+      "at": 1791806400000
+     }
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 1,
+    "left": 9,
+    "pct": 0.1
+   }
+  },
+  {
+   "name": "до покупки за сутки считается",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1790035200000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 1,
+    "left": 9,
+    "pct": 0.1
+   }
+  },
+  {
+   "name": "раньше покупки не считается",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1789905600000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 0,
+    "left": 10,
+    "pct": 0
+   }
+  },
+  {
+   "name": "чужой клиент",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c2",
+     "dur": 60,
+     "start": 1791720000000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 0,
+    "left": 10,
+    "pct": 0
+   }
+  },
+  {
+   "name": "ручное списание +2",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 2
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791720000000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 3,
+    "left": 7,
+    "pct": 0.3
+   }
+  },
+  {
+   "name": "возврат ниже нуля",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": -3
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791720000000
+    }
+   ],
+   "expected": {
+    "tot": 10,
+    "used": 0,
+    "left": 10,
+    "pct": 0
+   }
+  },
+  {
+   "name": "перерасход",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {
+     "total": 2
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791547200000
+    },
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791633600000
+    },
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791720000000
+    }
+   ],
+   "expected": {
+    "tot": 2,
+    "used": 3,
+    "left": 0,
+    "pct": 1
+   }
+  },
+  {
+   "name": "не принят",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "new",
+    "sessions": {
+     "total": 10
+    },
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [
+    {
+     "trainer": "t1",
+     "bookedBy": "c1",
+     "dur": 60,
+     "start": 1791720000000
+    }
+   ],
+   "expected": null
+  },
+  {
+   "name": "без total",
+   "r": {
+    "uid": "c1",
+    "trainer": "t1",
+    "status": "accepted",
+    "sessions": {},
+    "answeredAt": 1790078400000,
+    "adj": 0
+   },
+   "slots": [],
+   "expected": null
+  }
+ ],
+ "price": [
+  [
+   "550 €",
+   550
+  ],
+  [
+   "1 200,50 €",
+   1200.5
+  ],
+  [
+   "ab 49€",
+   49
+  ],
+  [
+   "",
+   0
+  ],
+  [
+   null,
+   0
+  ],
+  [
+   "€",
+   0
+  ]
+ ]
+}

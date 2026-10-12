@@ -23,6 +23,19 @@ export const ROUTES: Route[] = [
   { method: 'DELETE', path: '/users/{uid}', handler: 'user' },
   { method: 'GET', path: '/users/{uid}/export', handler: 'user' },
   ...many(['/users/{uid}/{entity}', '/users/{uid}/{entity}/{id}'], crud, 'user'),
+
+  // A2.4: кабинет тренера
+  ...many(['/trainer/profile'], ['GET', 'PUT'], 'trainer'),
+  ...many(['/trainer/clients', '/trainer/requests', '/trainer/overview'], ['GET'], 'trainer'),
+  ...many(['/trainer/slots'], ['GET', 'POST'], 'trainer'),
+  { method: 'DELETE', path: '/trainer/slots/{id}', handler: 'trainer' },
+  ...many(['/trainer/slots/{id}/cancel', '/trainer/slots/{id}/note', '/trainer/requests/{id}/answer', '/trainer/requests/{id}/adjust'], ['POST'], 'trainer'),
+  // A2.4: клиент и тренер
+  ...many(['/trainers', '/trainers/by-code/{code}', '/trainers/{tid}', '/trainers/{tid}/slots'], ['GET'], 'trainer'),
+  ...many(['/trainers/{tid}/slots/{id}/book', '/trainers/{tid}/slots/{id}/cancel', '/trainers/{tid}/requests'], ['POST'], 'trainer'),
+  ...many(['/trainers/{tid}/link'], ['PUT', 'DELETE'], 'trainer'),
+  ...many(['/me/bookings', '/me/requests', '/me/links', '/me/notifications'], ['GET'], 'trainer'),
+  { method: 'POST', path: '/me/notifications/read', handler: 'trainer' },
 ];
 
 /** Сопоставление пути с шаблоном '/me/{entity}/{id}'. Возвращает параметры или null. */

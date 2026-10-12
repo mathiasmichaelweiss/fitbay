@@ -7,15 +7,16 @@ import { resolve, type Route } from '../routes';
 import { makeLocalAuth } from '../auth/local';
 import { makeHandler as makeUser } from '../user/handler';
 import { handler as health } from '../health';
+import { makeHandler as makeTrainer } from '../trainer/handler';
 
 type H = (e: Event) => Promise<Result>;
 
 /** Локальный API: те же обработчики, что в Lambda, маршрутизация как в API Gateway (HTTP API). */
-export function createServer(repo: Repo, opts: { origins?: string[]; auth?: ReturnType<typeof makeLocalAuth> } = {}) {
+export function createServer(repo: Repo, opts: { origins?: string[]; auth?: ReturnType<typeof makeLocalAuth>; now?: () => number } = {}) {
   const handlers: Record<Route['handler'], H | undefined> = {
     health: health as unknown as H,
     user: makeUser(repo),
-    trainer: undefined,
+    trainer: makeTrainer(repo, opts.now),
     corrections: undefined,
     ai: undefined,
   };

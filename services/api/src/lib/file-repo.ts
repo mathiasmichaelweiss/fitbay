@@ -19,6 +19,9 @@ export class FileRepo extends MemoryRepo {
     fs.writeFileSync(tmp, JSON.stringify([...this.items.values()], null, 1));
     fs.renameSync(tmp, this.file);
   }
+  protected override afterWrite() {
+    this.flush();
+  }
   override async put(item: Item) {
     await super.put(item);
     this.flush();
