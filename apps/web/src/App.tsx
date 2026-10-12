@@ -3,21 +3,30 @@ import { Showcase } from './Showcase';
 import { Shell } from './nav/Shell';
 import { useNav } from './nav/store';
 
-const useHash = () => {
-  const [hash, setHash] = useState(location.hash);
+const where = () => location.pathname + location.hash;
+
+const useLocation = () => {
+  const [loc, setLoc] = useState(where());
   useEffect(() => {
-    const on = () => setHash(location.hash);
+    const on = () => setLoc(where());
     addEventListener('hashchange', on);
-    return () => removeEventListener('hashchange', on);
+    addEventListener('popstate', on);
+    return () => {
+      removeEventListener('hashchange', on);
+      removeEventListener('popstate', on);
+    };
   }, []);
-  return hash;
+  return loc;
 };
 
+/** Библиотека компонентов: /ui (и старый адрес #/ui). */
+export const isShowcase = (loc: string) => loc.startsWith('/ui') || loc.endsWith('#/ui');
+
 export function App() {
-  const hash = useHash();
+  const loc = useLocation();
   const setTrainer = useNav((s) => s.setTrainer);
   // До Auth0: #/trainer включает роль тренера для проверки «Я / Кабинет».
-  useEffect(() => setTrainer(hash === '#/trainer'), [hash, setTrainer]);
-  if (hash === '#/ui') return <Showcase />;
+  useEffect(() => setTrainer(loc.endsWith('#/trainer')), [loc, setTrainer]);
+  if (isShowcase(loc)) return <Showcase />;
   return <Shell />;
 }

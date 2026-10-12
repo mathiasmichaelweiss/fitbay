@@ -9,7 +9,24 @@ export function Showcase() {
 
   return (
     <main className="page">
-      <h1 style={{ margin: 0 }}>Витрина компонентов</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h1 style={{ margin: 0, flex: 1 }}>Витрина компонентов</h1>
+        <a href="/" style={{ color: 'var(--teal)' }}>← В приложение</a>
+      </div>
+      <p style={{ margin: 0, color: 'var(--muted)', fontSize: 14 }}>
+        Токены: <code>apps/web/src/tokens.css</code>, компоненты: <code>apps/web/src/ui</code>
+      </p>
+
+      <Card title="Цвета">
+        <div className="tiles">
+          {['orange', 'yellow', 'teal', 'red', 'surface', 'surface-2', 'line', 'muted'].map((c) => (
+            <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 28, height: 28, borderRadius: 8, background: `var(--${c})`, border: '1px solid var(--line)' }} />
+              <code style={{ fontSize: 12 }}>--{c}</code>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <Card title="Плитки (tile)">
         <div className="tiles">

@@ -5,6 +5,7 @@ import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { CorsHttpMethod, HttpApi, HttpMethod } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import type { Construct } from 'constructs';
 import * as path from 'node:path';
 
@@ -13,6 +14,9 @@ export interface FitBayStackProps extends StackProps {
   prefix?: string;
   /** Разрешённые origin для CORS (локальный dev и хостинг беты). */
   allowedOrigins?: string[];
+  /** Auth0: домен тенанта (без https://) и audience API. */
+  auth0Domain?: string;
+  auth0Audience?: string;
 }
 
 // A2.1 (спека 5.1, 5.2): таблицы, бакет для фото, HTTP API + Lambda. Таблицы BewerGO не трогаем.
@@ -52,24 +56,53 @@ export class FitBayBetaStack extends Stack {
       cors: [{ allowedMethods: [HttpMethods.GET, HttpMethods.PUT], allowedOrigins: origins, allowedHeaders: ['*'], maxAge: 3000 }],
     });
 
-    const health = new NodejsFunction(this, 'HealthFn', {
-      functionName: `${prefix}-api-health`,
-      entry: path.join(__dirname, '../../services/api/src/health.ts'),
-      runtime: Runtime.NODEJS_24_X,
-      architecture: Architecture.ARM_64,
-      memorySize: 256,
-      timeout: Duration.seconds(10),
-      environment: { TABLE_MAIN: main.tableName, TABLE_SHARED_FOOD: sharedFood.tableName, PHOTOS_BUCKET: photos.bucketName },
+    const env = { TABLE_MAIN: main.tableName, TABLE_SHARED_FOOD: sharedFood.tableName, PHOTOS_BUCKET: photos.bucketName };
+    const fn = (id: string, name: string, entry: string, extra: Record<string, string> = {}) =>
+      new NodejsFunction(this, id, {
+        functionName: `${prefix}-${name}`,
+        entry: path.join(__dirname, '../../services/api/src', entry),
+        runtime: Runtime.NODEJS_24_X,
+        architecture: Architecture.ARM_64,
+        memorySize: 256,
+        timeout: Duration.seconds(10),
+        environment: { ...env, ...extra },
+        bundling: { minify: true, sourceMap: true },
+      });
+
+    const health = fn('HealthFn', 'api-health', 'health.ts');
+
+    const auth0Domain = props.auth0Domain ?? this.node.tryGetContext('auth0Domain') ?? 'CHANGE-ME.eu.auth0.com';
+    const auth0Audience = props.auth0Audience ?? this.node.tryGetContext('auth0Audience') ?? 'https://api.fitbay.app';
+    const authFn = fn('AuthorizerFn', 'api-authorizer', 'auth/authorizer.ts', { AUTH0_DOMAIN: auth0Domain, AUTH0_AUDIENCE: auth0Audience });
+    const authorizer = new HttpLambdaAuthorizer('Auth0Authorizer', authFn, {
+      responseTypes: [HttpLambdaResponseType.SIMPLE],
+      identitySource: ['$request.header.Authorization'],
+      resultsCacheTtl: Duration.minutes(5),
     });
-    main.grantReadWriteData(health);
-    sharedFood.grantReadWriteData(health);
-    photos.grantReadWrite(health);
+
+    // A2.3: API пользователя. Пишет только в fitbay-main.
+    const userFn = fn('UserFn', 'api-user', 'user/handler.ts');
+    main.grantReadWriteData(userFn);
 
     const api = new HttpApi(this, 'Api', {
       apiName: `${prefix}-api`,
       corsPreflight: { allowOrigins: origins, allowMethods: [CorsHttpMethod.ANY], allowHeaders: ['authorization', 'content-type'] },
     });
     api.addRoutes({ path: '/health', methods: [HttpMethod.GET], integration: new HttpLambdaIntegration('HealthInt', health) });
+
+    const userInt = new HttpLambdaIntegration('UserInt', userFn);
+    const crud = [HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE];
+    const routes: [string, HttpMethod[]][] = [
+      ['/me', [HttpMethod.DELETE]],
+      ['/me/export', [HttpMethod.GET]],
+      ['/me/{entity}', crud],
+      ['/me/{entity}/{id}', crud],
+      ['/users/{uid}', [HttpMethod.DELETE]],
+      ['/users/{uid}/export', [HttpMethod.GET]],
+      ['/users/{uid}/{entity}', crud],
+      ['/users/{uid}/{entity}/{id}', crud],
+    ];
+    for (const [p, methods] of routes) api.addRoutes({ path: p, methods, integration: userInt, authorizer });
 
     new CfnOutput(this, 'ApiUrl', { value: api.apiEndpoint });
     new CfnOutput(this, 'MainTable', { value: main.tableName });

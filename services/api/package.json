@@ -3,7 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "typecheck": "tsc --noEmit" },
-  "dependencies": { "@fitbay/calc": "workspace:*", "@fitbay/shared": "workspace:*" },
-  "devDependencies": { "@types/aws-lambda": "^8.10.145", "@types/node": "^20.16.0" }
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1149.0",
+    "@aws-sdk/lib-dynamodb": "^3.1149.0",
+    "@fitbay/calc": "workspace:*",
+    "@fitbay/shared": "workspace:*",
+    "jose": "^6.2.12"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^20.16.0"
+  }
 }

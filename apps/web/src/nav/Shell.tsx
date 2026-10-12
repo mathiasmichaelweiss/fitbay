@@ -41,6 +41,11 @@ export function Shell() {
         <button type="button" className="langbtn" aria-label={t('header.language')} onClick={() => void i18n.changeLanguage(nextLang)}>
           {i18n.language}
         </button>
+        {import.meta.env.DEV && (
+          <a className="iconbtn" href="/ui" aria-label="UI kit" title="Библиотека компонентов" style={{ display: 'grid', placeItems: 'center', textDecoration: 'none' }}>
+            ◫
+          </a>
+        )}
         <button type="button" className="iconbtn" aria-label={t('header.notifications')}>🔔</button>
         <button type="button" className="iconbtn" aria-label={t('header.settings')}>⚙</button>
       </header>
