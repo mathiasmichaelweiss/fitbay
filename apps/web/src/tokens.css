@@ -1,13 +1,43 @@
-/* Дизайн-токены из прототипа (A0.2 дополнит радиусы и компоненты). */
+/* Дизайн-токены FitBay. Цвета и шрифт из прототипа (спека, раздел 2).
+   Радиусы, отступы и оттенки фона предварительные: сверить с CSS kalorii.html. */
 :root {
   --orange: #ff5a0a;
   --yellow: #f2b705;
   --teal: #5bc0be;
+  --red: #ff4d5e;
+
   --bg: #0f1115;
+  --surface: #181b21;
+  --surface-2: #22262e;
+  --line: #2c313a;
   --fg: #f4f4f5;
-  --font: 'Onest', system-ui, sans-serif;
+  --muted: #9aa0aa;
+
+  --font: 'Onest', system-ui, -apple-system, sans-serif;
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;
+  --fs-lg: 20px;
+  --fs-xl: 28px;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+
+  --tap: 44px;
+  --shadow: 0 8px 30px rgb(0 0 0 / 0.35);
 }
-* { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); overflow-x: hidden; }
-input, select, textarea { font-size: 16px; }
-body { padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); line-height: 1.4; }
+input, select, textarea, button { font: inherit; }
+input, select, textarea { font-size: var(--fs-md); }
+img { max-width: 100%; }
