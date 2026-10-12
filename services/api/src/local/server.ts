@@ -8,16 +8,20 @@ import { makeLocalAuth } from '../auth/local';
 import { makeHandler as makeUser } from '../user/handler';
 import { handler as health } from '../health';
 import { makeHandler as makeTrainer } from '../trainer/handler';
+import { makeHandler as makeCorrections } from '../corrections/handler';
+import { MemoryRepo } from '../lib/repo';
 
 type H = (e: Event) => Promise<Result>;
 
 /** Локальный API: те же обработчики, что в Lambda, маршрутизация как в API Gateway (HTTP API). */
-export function createServer(repo: Repo, opts: { origins?: string[]; auth?: ReturnType<typeof makeLocalAuth>; now?: () => number } = {}) {
+/** repo: fitbay-main, shared: fitbay-shared-food. */
+export function createServer(repo: Repo, opts: { shared?: Repo; origins?: string[]; auth?: ReturnType<typeof makeLocalAuth>; now?: () => number } = {}) {
+  const shared = opts.shared ?? new MemoryRepo();
   const handlers: Record<Route['handler'], H | undefined> = {
     health: health as unknown as H,
     user: makeUser(repo),
     trainer: makeTrainer(repo, opts.now),
-    corrections: undefined,
+    corrections: makeCorrections(repo, shared, opts.now),
     ai: undefined,
   };
   const auth = opts.auth ?? makeLocalAuth();
@@ -78,7 +82,8 @@ export function createServer(repo: Repo, opts: { origins?: string[]; auth?: Retu
 if (process.argv[1]?.endsWith('server.ts')) {
   const port = Number(process.env.PORT ?? 8787);
   const file = process.env.DB_FILE ?? path.resolve(process.cwd(), '.data/db.json');
-  createServer(new FileRepo(file)).listen(port, () => {
+  const sharedFile = file.replace(/\.json$/, '.shared-food.json');
+  createServer(new FileRepo(file), { shared: new FileRepo(sharedFile) }).listen(port, () => {
     console.log(`FitBay API: http://localhost:${port}  (база: ${file}, вход: ${process.env.AUTH0_DOMAIN ? 'Auth0' : 'dev, заголовок x-dev-user'})`);
   });
 }

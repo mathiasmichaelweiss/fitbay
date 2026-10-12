@@ -36,6 +36,8 @@ export const ROUTES: Route[] = [
   ...many(['/trainers/{tid}/link'], ['PUT', 'DELETE'], 'trainer'),
   ...many(['/me/bookings', '/me/requests', '/me/links', '/me/notifications'], ['GET'], 'trainer'),
   { method: 'POST', path: '/me/notifications/read', handler: 'trainer' },
+  // A2.6: поправка веса при сохранении блюда
+  { method: 'POST', path: '/me/corrections', handler: 'corrections' },
 ];
 
 /** Сопоставление пути с шаблоном '/me/{entity}/{id}'. Возвращает параметры или null. */

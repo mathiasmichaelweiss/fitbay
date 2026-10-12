@@ -338,3 +338,67 @@ export function finOverview(reqs: PkgRequest[], slots: SlotLike[], clients: { up
     top: Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 5),
   };
 }
+
+/* ---- поправки веса блюд (wcKey, wcAgg, loadWcAll, запись поправки в saveMeal прототипа) ---- */
+export interface WeightCorr {
+  /** Название блюда */
+  n: string;
+  /** Оценка ИИ, г */
+  est: number;
+  /** На весах, г */
+  real: number;
+  at: number;
+}
+export interface CommunityRow {
+  r: number;
+  u: string;
+  at: number;
+}
+
+/** Нормализованный ключ блюда для сравнения. */
+export const wcKey = (n: unknown) =>
+  String(n || '')
+    .toLowerCase()
+    .replace(/[^a-zа-яёäöüß0-9 ]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
+ * Записать поправку, если вес с весов отличается от оценки ИИ больше чем на 15%.
+ * Предыдущая поправка по тому же блюду заменяется, хранятся последние 30. Возвращает новый список или null.
+ */
+export function addCorrection(list: WeightCorr[], dish: string, est: number, real: number, at: number): WeightCorr[] | null {
+  if (!est || !real || Math.abs(real - est) / est <= 0.15) return null;
+  return list.filter((x) => x.n !== dish).concat([{ n: dish, est: Math.round(est), real: Math.round(real), at }]).slice(-30);
+}
+
+/** Сбор общей базы: последние 30 поправок каждого пользователя, коэффициенты вне 0.15..6 отбрасываются. */
+export function communityIndex(docs: Record<string, WeightCorr[]>): Record<string, CommunityRow[]> {
+  const by: Record<string, CommunityRow[]> = {};
+  for (const [u, list] of Object.entries(docs))
+    for (const x of list.slice(-30)) {
+      const r = x.real / x.est;
+      if (!(r > 0.15 && r < 6)) continue;
+      (by[wcKey(x.n)] ??= []).push({ r, u, at: x.at || 0 });
+    }
+  return by;
+}
+
+/** Последние 30 по блюду, медиана, отсев за пределами ×0.5..×2 от медианы, среднее. */
+export function wcAgg(rows: CommunityRow[]): { avg: number; n: number; users: number } {
+  const L = [...rows].sort((a, b) => b.at - a.at).slice(0, 30);
+  const s = L.map((x) => x.r).sort((a, b) => a - b);
+  const med = s[Math.floor(s.length / 2)]!;
+  const ok = L.filter((x) => x.r >= med / 2 && x.r <= med * 2);
+  return { avg: ok.reduce((a, x) => a + x.r, 0) / ok.length, n: ok.length, users: new Set(ok.map((x) => x.u)).size };
+}
+
+/** Поиск по блюду (как wcHint): точное совпадение ключа или вхождение, если оба длиннее 3 символов. */
+export function communityFor(index: Record<string, CommunityRow[]>, name: string): { avg: number; n: number; users: number } | null {
+  const k = wcKey(name);
+  if (!k) return null;
+  const L = Object.entries(index)
+    .filter(([kk]) => kk === k || (kk.length > 3 && k.length > 3 && (k.includes(kk) || kk.includes(k))))
+    .flatMap(([, v]) => v);
+  return L.length ? wcAgg(L) : null;
+}

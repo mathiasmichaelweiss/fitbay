@@ -86,6 +86,9 @@ export class FitBayBetaStack extends Stack {
     const trainerFn = fn('TrainerFn', 'api-trainer', 'trainer/handler.ts');
     main.grantReadWriteData(userFn);
     main.grantReadWriteData(trainerFn);
+    const corrFn = fn('CorrectionsFn', 'api-corrections', 'corrections/handler.ts');
+    main.grantReadWriteData(corrFn);
+    sharedFood.grantReadWriteData(corrFn);
 
     const api = new HttpApi(this, 'Api', {
       apiName: `${prefix}-api`,
@@ -95,6 +98,7 @@ export class FitBayBetaStack extends Stack {
       health: new HttpLambdaIntegration('HealthInt', health),
       user: new HttpLambdaIntegration('UserInt', userFn),
       trainer: new HttpLambdaIntegration('TrainerInt', trainerFn),
+      corrections: new HttpLambdaIntegration('CorrectionsInt', corrFn),
     } as const;
     for (const r of ROUTES) {
       const integration = integrations[r.handler as keyof typeof integrations];
