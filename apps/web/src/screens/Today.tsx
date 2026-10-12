@@ -11,6 +11,7 @@ import { dayType, flexOf, mealsKey, type CalcProfile } from '@fitbay/calc';
 import { api, ApiError } from '@/data/api';
 import { shiftDay, today, useCoach, useDaySummary, useMealOps, useProfile, useSaveProfile } from '@/data/hooks';
 import { FatTile } from './FatTile';
+import { TrendSheet } from './TrendSheet';
 import { groupMeals, SLOTN, withTs } from '@/lib/meals';
 import { CheckinTile } from './Checkin';
 import { AddFood } from './food/AddFood';
@@ -22,6 +23,7 @@ export function Today({ date }: { date: string }) {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Meal | null>(null);
   const [quick, setQuick] = useState(false);
+  const [trend, setTrend] = useState(false);
   const { target: tg, eaten: s, meals } = useDaySummary(date);
   const { remove } = useMealOps();
   const { data: saved } = useCoach(date);
@@ -147,7 +149,7 @@ export function Today({ date }: { date: string }) {
         </div>
       </div>
 
-      <FatTile date={date} meals={meals} />
+      <FatTile date={date} meals={meals} onOpen={() => setTrend(true)} />
 
       <div className="relative col-span-full flex flex-col rounded-xl bg-brand-teal p-4 text-on-color">
         <span className="text-[1.1rem] font-semibold">»</span>
@@ -206,6 +208,7 @@ export function Today({ date }: { date: string }) {
 
       <AddFood date={date} open={adding || !!editing} edit={editing} onClose={() => (setAdding(false), setEditing(null))} onQuickDay={() => setQuick(true)} />
       <QuickDay date={date} open={quick} onClose={() => setQuick(false)} />
+      <TrendSheet open={trend} onClose={() => setTrend(false)} />
     </Tiles>
   );
 }

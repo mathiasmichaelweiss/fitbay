@@ -156,7 +156,7 @@ test('коуч: недоступен без еды, отвечает через 
 test('жир сегодня и календарь с кольцами', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('fat-num')).toBeVisible();
-  await page.getByTestId('title').click();
+  await page.getByTestId('date').click();
   const cal = page.getByRole('dialog', { name: 'Календарь' });
   await expect(cal).toBeVisible();
   const d = new Date();

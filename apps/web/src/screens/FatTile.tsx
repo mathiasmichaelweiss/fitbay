@@ -6,7 +6,7 @@ import { shiftDay, today, useMealsRange, useProfile, useWeighings } from '@/data
 import { withTs } from '@/lib/meals';
 
 /** Плитка «Жир сегодня» (renderFat прототипа): факт по дефициту, прогноз на месяц, «живой» прогноз в течение дня. */
-export function FatTile({ date, meals }: { date: string; meals: Meal[] }) {
+export function FatTile({ date, meals, onOpen }: { date: string; meals: Meal[]; onOpen?: () => void }) {
   const { t, i18n } = useTranslation();
   const { data: profile } = useProfile();
   const { data: hist = [] } = useMealsRange(shiftDay(date, -60), date);
@@ -36,6 +36,8 @@ export function FatTile({ date, meals }: { date: string; meals: Meal[] }) {
       <Tile
         color="cream"
         full
+        onClick={onOpen}
+        data-testid="fat-tile"
         dot={stale}
         label={`${t('ПРОГНОЗ НА СЕГОДНЯ')} ≈`}
         value={<span data-testid="fat-num">{sign(fat)}</span>}
@@ -48,6 +50,8 @@ export function FatTile({ date, meals }: { date: string; meals: Meal[] }) {
     <Tile
       color="cream"
       full
+      onClick={onOpen}
+      data-testid="fat-tile"
       dot={stale}
       label={`${t(date === today() ? 'ЖИР СЕГОДНЯ' : 'ЖИР ЗА ДЕНЬ')} ≈`}
       value={<span data-testid="fat-num">{T0 ? sign(T0.fat) : `0${u}`}</span>}

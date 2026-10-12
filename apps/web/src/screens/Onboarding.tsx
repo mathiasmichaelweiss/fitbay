@@ -40,7 +40,7 @@ const CONSENT_TEXT =
 export function Onboarding({ initial }: { initial?: Profile | null }) {
   const { t, i18n } = useTranslation();
   const save = useSaveProfile();
-  const setTab = useNav((s) => s.setTab);
+  const setMode = useNav((s) => s.setMode);
   const setOnboarding = useNav((s) => s.setOnboarding);
   const [step, setStep] = useState(0);
   const [cons, setCons] = useState(!!initial?.consents.health);
@@ -86,7 +86,7 @@ export function Onboarding({ initial }: { initial?: Profile | null }) {
     save.mutate(profile(), {
       onSuccess: () => {
         setOnboarding(false);
-        setTab(path === 'trainer' || path === 'code' ? 'trainer' : 'today');
+        setMode('food');
       },
     });
 

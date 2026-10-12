@@ -46,7 +46,7 @@ test('чек-ин: пустой нельзя сохранить', async ({ page 
 
 test('вес: запись за сегодня обновляется, а не дублируется', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('tabbar').getByRole('button', { name: 'Прогресс' }).click();
+  await page.getByTestId('fat-tile').click();
   const input = page.getByLabel('Вес сегодня, кг');
   await input.fill('79,4');
   await page.getByRole('button', { name: 'Сохранить' }).click();

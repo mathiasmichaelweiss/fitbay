@@ -50,7 +50,7 @@ test('онбординг как в прототипе: 5 шагов, норма 
   await page.getByRole('radio', { name: /Сам, с ИИ-коучем/ }).click();
   await done.click();
 
-  await expect(page.getByTestId('title')).toHaveText('Сегодня');
+  await expect(page.getByTestId('date')).toHaveText('Сегодня');
   await page.reload();
   // профиль сохранён на сервере (локальный API), а не в браузере
   const saved = await (await page.request.get(`${API}/me/profile`, { headers: { 'x-dev-user': uid } })).json();
