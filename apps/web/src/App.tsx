@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Showcase } from './Showcase';
+import { Shell } from './nav/Shell';
+import { useNav } from './nav/store';
 
 const useHash = () => {
   const [hash, setHash] = useState(location.hash);
@@ -13,13 +15,9 @@ const useHash = () => {
 
 export function App() {
   const hash = useHash();
+  const setTrainer = useNav((s) => s.setTrainer);
+  // До Auth0: #/trainer включает роль тренера для проверки «Я / Кабинет».
+  useEffect(() => setTrainer(hash === '#/trainer'), [hash, setTrainer]);
   if (hash === '#/ui') return <Showcase />;
-  return (
-    <main className="page">
-      <h1 style={{ color: 'var(--orange)', margin: 0 }}>FitBay</h1>
-      <p>
-        Витрина компонентов: <a href="#/ui" style={{ color: 'var(--teal)' }}>#/ui</a>
-      </p>
-    </main>
-  );
+  return <Shell />;
 }
