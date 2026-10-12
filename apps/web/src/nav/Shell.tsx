@@ -4,8 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { de, ru } from 'date-fns/locale';
 import { BellIcon, CalendarDaysIcon, DumbbellIcon, EuroIcon, LayoutTemplateIcon, PaletteIcon, SettingsIcon, SunIcon, TrendingUpIcon, UserRoundIcon, UsersIcon, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { CalendarSheet } from '@/screens/CalendarSheet';
 import { Tile, Tiles } from '@/components/ui/tile';
 import { SingleToggle } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
@@ -111,23 +110,7 @@ export function Shell() {
         </div>
       </nav>
 
-      <Drawer open={cal} onOpenChange={setCal}>
-        <DrawerContent>
-          <DrawerTitle className="mb-3">{t('Календарь')}</DrawerTitle>
-          <Calendar
-            mode="single"
-            locale={locale}
-            weekStartsOn={1}
-            selected={parseISO(day)}
-            onSelect={(d) => {
-              if (d) setDay(format(d, 'yyyy-MM-dd'));
-              setCal(false);
-            }}
-            disabled={{ after: new Date() }}
-            defaultMonth={parseISO(day)}
-          />
-        </DrawerContent>
-      </Drawer>
+      <CalendarSheet open={cal} day={day} onPick={setDay} onClose={() => setCal(false)} />
     </div>
   );
 }

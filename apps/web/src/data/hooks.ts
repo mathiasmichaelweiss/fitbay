@@ -50,3 +50,23 @@ export function useDaySummary(date: string): { target: Target | null; eaten: Mac
   return { target: profile ? target(profile as CalcProfile, date) : null, eaten: sum(meals), meals };
 }
 export const useCheckins = () => useQuery({ queryKey: ['checkins'], queryFn: () => api.list<Checkin>('checkins') });
+
+/** Еда за период (для «Жир за день» нужны прошлые дни, для календаря месяц). */
+export const useMealsRange = (from: string, to: string) =>
+  useQuery({ queryKey: ['meals', 'range', from, to], queryFn: () => api.list<Meal>('meals', { from, to }) });
+
+/** Взвешивания для weightOn: замеры с весом. */
+export function useWeighings() {
+  const { data = [] } = useMeasures();
+  return data.filter((m) => typeof m.weight === 'number').map((m) => ({ date: m.date, w: m.weight! }));
+}
+
+export const shiftDay = (date: string, n: number) => {
+  const d = new Date(`${date}T12:00:00`);
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+/** Сохранённый совет коуча на день (COACH#<дата>). */
+export const useCoach = (date: string) =>
+  useQuery({ queryKey: ['coach', date], queryFn: () => api.call<{ text: string; key: string; at: number } | null>('GET', `/me/coach/${date}`).catch(() => null) });

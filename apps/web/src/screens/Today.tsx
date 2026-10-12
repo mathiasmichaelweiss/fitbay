@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { FoodIcon } from '@/components/ui/food-icons';
 import { CapsRings, RC } from '@/components/ui/rings';
 import { Tile, Tiles } from '@/components/ui/tile';
-import { today, useDaySummary, useMealOps } from '@/data/hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { mealsKey } from '@fitbay/calc';
+import { api, ApiError } from '@/data/api';
+import { today, useCoach, useDaySummary, useMealOps } from '@/data/hooks';
+import { FatTile } from './FatTile';
 import { groupMeals, SLOTN, withTs } from '@/lib/meals';
 import { CheckinTile } from './Checkin';
 import { AddFood } from './food/AddFood';
@@ -20,6 +24,11 @@ export function Today({ date }: { date: string }) {
   const [quick, setQuick] = useState(false);
   const { target: tg, eaten: s, meals } = useDaySummary(date);
   const { remove } = useMealOps();
+  const { data: saved } = useCoach(date);
+  const qc = useQueryClient();
+  const [asking, setAsking] = useState(false);
+  const [coachErr, setCoachErr] = useState('');
+  const [coachInfo, setCoachInfo] = useState('');
   const loc = i18n.language === 'de' ? 'de-DE' : 'ru-RU';
   const g = t('г');
   const past = date < today();
@@ -27,7 +36,7 @@ export function Today({ date }: { date: string }) {
 
   const pl = tg.p - s.p;
   const kl = tg.k - s.k;
-  const coach = !meals.length
+  const fallback = !meals.length
     ? t('День чистый. Начни с белкового завтрака, так проще закрыть средний круг.')
     : s.k > tg.k * 1.05
       ? i18n.language === 'de'
@@ -42,6 +51,27 @@ export function Today({ date }: { date: string }) {
             ? `Eiweiß geschafft. Noch ${kl} kcal bis zum Bedarf.`
             : `Белок закрыт. Еще ${kl} ккал до нормы.`
           : t('Все круги закрыты. Отличный день.');
+  const coach = asking ? t('Коуч думает...') : (saved?.text ?? fallback);
+  const loc2 = i18n.language === 'de' ? 'de-DE' : 'ru-RU';
+  const coachMeta = coachErr || coachInfo || (saved ? `${i18n.language === 'de' ? 'Stand ' : 'Совет от '}${new Date(saved.at).toLocaleTimeString(loc2, { hour: '2-digit', minute: '2-digit' })}${saved.key !== mealsKey(meals) ? (i18n.language === 'de' ? ', seitdem neue Einträge' : ', после него были новые записи') : ''}` : '');
+
+  /** $("askCoach").onclick прототипа: только сегодня и только если есть еда. */
+  const askCoach = async () => {
+    if (past || !meals.length) return;
+    setAsking(true);
+    setCoachErr('');
+    setCoachInfo('');
+    try {
+      const now = new Date();
+      const r = await api.call<{ text: string; cached?: boolean }>('POST', '/ai/coach', { day: date, time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, lang: i18n.language });
+      await qc.invalidateQueries({ queryKey: ['coach', date] });
+      if (r.cached) setCoachInfo(t('Совет актуален. Новый появится после следующего приема пищи.'));
+    } catch (e) {
+      setCoachErr(e instanceof ApiError && (e.status === 429 || e.status === 503) ? t(e.message) : i18n.language === 'de' ? 'Coach hat gerade nicht geantwortet.' : 'Коуч сейчас не ответил, попробуй еще раз.');
+    } finally {
+      setAsking(false);
+    }
+  };
 
   const legend: [string, number, number, string, string][] = [
     ['Калории', s.k, tg.k, '', RC.k],
@@ -100,15 +130,18 @@ export function Today({ date }: { date: string }) {
         </div>
       </div>
 
+      <FatTile date={date} meals={meals} />
+
       <div className="relative col-span-full flex flex-col rounded-xl bg-brand-teal p-4 text-on-color">
         <span className="text-[1.1rem] font-semibold">»</span>
         <span className="absolute right-3.5 top-3.5 rounded-full bg-black/10 px-2.5 py-0.5 text-[0.7rem] font-semibold">{t('AI-коуч')}</span>
         <div className="mt-3.5 text-[1.15rem] font-medium leading-[1.3]" data-testid="coach">
           {coach}
         </div>
-        <Button disabled className="mt-3.5 h-auto self-start rounded-full bg-[#111] px-4 py-2.5 text-[0.9rem] text-white hover:bg-[#111]">
-          {t('Спросить коуча')}
+        <Button disabled={past || asking || !meals.length} onClick={askCoach} className="mt-3.5 h-auto self-start rounded-full bg-[#111] px-4 py-2.5 text-[0.9rem] text-white hover:bg-[#111]/90">
+          {t(saved ? 'Обновить совет' : 'Спросить коуча')}
         </Button>
+        {coachMeta && <div className="mt-1.5 text-[0.75rem] opacity-55" data-testid="coach-meta">{coachMeta}</div>}
       </div>
 
       <div className="col-span-full rounded-xl bg-brand-peach p-4 text-on-color">

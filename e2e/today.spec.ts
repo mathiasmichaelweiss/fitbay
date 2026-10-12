@@ -57,16 +57,6 @@ test('вес: запись за сегодня обновляется, а не �
   await expect(page.getByTestId('w-change')).toContainText('0');
 });
 
-test('прошлый день: добавить еду нельзя, коуч и плитки работают', async ({ page }) => {
-  await page.goto('/');
-  await page.getByTestId('title').click();
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  await page.getByRole('dialog').getByRole('button', { name: new RegExp(`^[^,]+, ${d.getDate()} `) }).first().click();
-  await expect(page.getByTestId('add-food')).toBeDisabled();
-  await expect(page.getByTestId('add-food')).toContainText('День закрыт');
-});
-
 test('экран без горизонтального скролла на 360 px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/');

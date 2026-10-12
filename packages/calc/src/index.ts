@@ -477,3 +477,60 @@ export const SLOTN: Record<MealSlot, string> = { breakfast: 'Завтрак', lu
 
 /** Ключ набора еды за день (mealsKey прототипа): совет коуча не перезапрашивается, пока он не изменился. */
 export const mealsKey = (ms: { id: string; kcal: number; protein: number }[]) => `v2|${ms.map((m) => `${m.id}:${m.kcal}:${m.protein}`).join('|')}`;
+
+/* ---- жир за день и прогноз (dayStats, proj, CALC.weightOn прототипа) ---- */
+export interface Weighing {
+  date: string;
+  w: number;
+}
+/** Вес на дату: последнее взвешивание не позже дня, иначе вес профиля. */
+export function weightOn(weights: Weighing[], day: string, fallback: number): number {
+  let w: number | null = null;
+  for (const x of [...weights].sort((a, b) => (a.date < b.date ? -1 : 1))) if (x.date <= day) w = x.w;
+  return w || fallback;
+}
+export interface DayStat {
+  d: string;
+  eat: number;
+  prot: number;
+  /** белок г на кг веса */
+  pk: number;
+  ls: number;
+  tdee: number;
+  /** дефицит, ккал (минус = профицит) */
+  def: number;
+  /** жир, г (минус = набор) */
+  fat: number;
+}
+
+/**
+ * dayStats прототипа: по каждому дню с едой расход (с весом на этот день и активностью), дефицит и жир.
+ * Выбранный день без еды не учитывается. actKcal: сожжено по дням.
+ */
+export function dayStats(meals: { date: string; kcal?: number; protein?: number }[], p: CalcProfile, day: string, weights: Weighing[] = [], actKcal: Record<string, number> = {}, pct = DEFAULT_ACT_PCT): DayStat[] {
+  const by: Record<string, number> = {}, pr: Record<string, number> = {};
+  for (const m of meals) {
+    by[m.date] = (by[m.date] || 0) + (Number(m.kcal) || 0);
+    pr[m.date] = (pr[m.date] || 0) + (Number(m.protein) || 0);
+  }
+  if (!by[day]) delete by[day];
+  return Object.keys(by)
+    .sort()
+    .map((d) => {
+      const w = weightOn(weights, d, p.w);
+      const t = expenditure(p, d, { pct, actKcal: actKcal[d] ?? 0 }, w);
+      const def = t - by[d]!;
+      const pk = (pr[d] || 0) / w;
+      const ls = def > 0 ? leanShare(pk) : 0;
+      return { d, eat: by[d]!, prot: pr[d] || 0, pk, ls, tdee: t, def, fat: fatFromDeficit(def, pk) };
+    });
+}
+
+/** proj прототипа: средний дефицит последних 14 прошедших дней (если их меньше 3, всех), прогноз жира за месяц, кг. */
+export function proj(D: DayStat[], today: string): { avg: number; month: number; n: number } | null {
+  const L = D.filter((x) => x.d < today).slice(-14);
+  const use = L.length >= 3 ? L : D.slice(-14);
+  if (!use.length) return null;
+  const avg = use.reduce((a, x) => a + x.def, 0) / use.length;
+  return { avg, month: (avg * 30) / 7700, n: use.length };
+}

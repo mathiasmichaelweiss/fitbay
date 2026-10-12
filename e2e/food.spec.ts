@@ -133,3 +133,41 @@ test('весь день разом: разбор, снять галочку, д�
   await expect(page.getByTestId('kcal-eaten')).toHaveText('840');
   await expect(page.getByTestId('row')).toHaveCount(2);
 });
+
+test('коуч: недоступен без еды, отвечает через ИИ, повторно без новой еды не спрашивает', async ({ page }) => {
+  await page.goto('/');
+  const ask = page.getByRole('button', { name: 'Спросить коуча' });
+  await expect(ask).toBeDisabled();
+  await page.getByTestId('add-food').click();
+  await page.getByRole('radio', { name: /Описать словами/ }).click();
+  await page.getByLabel('Блюдо').fill('Каша');
+  await page.getByRole('button', { name: 'Посчитать' }).click();
+  await page.getByTestId('result').getByRole('button', { name: 'Сохранить' }).click();
+
+  await ask.click();
+  await expect(page.getByTestId('coach')).toHaveText('Тестовый совет коуча.');
+  await expect(page.getByTestId('coach-meta')).toContainText('Совет от');
+  await page.getByRole('button', { name: 'Обновить совет' }).click();
+  await expect(page.getByTestId('coach-meta')).toHaveText('Совет актуален. Новый появится после следующего приема пищи.');
+  await page.reload();
+  await expect(page.getByTestId('coach')).toHaveText('Тестовый совет коуча.'); // сохранён на сервере
+});
+
+test('жир сегодня и календарь с кольцами', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('fat-num')).toBeVisible();
+  await page.getByTestId('title').click();
+  const cal = page.getByRole('dialog', { name: 'Календарь' });
+  await expect(cal).toBeVisible();
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  if (tomorrow.slice(0, 7) === new Date().toISOString().slice(0, 7)) await expect(cal.getByRole('button', { name: tomorrow })).toBeDisabled();
+  d.setDate(d.getDate() - 2);
+  const y = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  if (y.slice(0, 7) !== new Date().toISOString().slice(0, 7)) await cal.getByRole('button', { name: 'Назад' }).click();
+  await cal.getByRole('button', { name: y }).click();
+  await expect(cal).toBeHidden();
+  await expect(page.getByTestId('add-food')).toContainText('День закрыт');
+  await expect(page.getByText('ЖИР ЗА ДЕНЬ', { exact: false })).toBeVisible();
+});
