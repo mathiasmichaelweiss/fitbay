@@ -164,6 +164,8 @@ export function httpApi(base: string, token: () => Promise<string | null> = auth
   };
 }
 
-const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+// В разработке по умолчанию локальный API (файл .env в git не попадает). VITE_API_URL=local: данные только в браузере.
+const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+const apiUrl = envUrl === 'local' ? undefined : envUrl || (import.meta.env.DEV ? 'http://localhost:8787' : undefined);
 export const api: Api = apiUrl ? httpApi(apiUrl) : localApi;
 export const API_MODE = apiUrl ? 'http' : 'local';

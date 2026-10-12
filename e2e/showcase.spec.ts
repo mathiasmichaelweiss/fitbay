@@ -15,8 +15,9 @@ test('витрина: без горизонтального скролла на 
 
 test.beforeEach(({ page }) => seed(page));
 
-test('витрина открывается из шапки в режиме разработки', async ({ page }) => {
+test('витрина открывается из настроек в режиме разработки', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Настройки' }).click();
   await page.getByRole('link', { name: 'UI kit' }).click();
   await expect(page).toHaveURL(/\/ui$/);
   await expect(page.getByRole('heading', { name: 'Витрина компонентов' })).toBeVisible();

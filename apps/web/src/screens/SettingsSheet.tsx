@@ -15,6 +15,12 @@ export function SettingsSheet({ open, onClose, onOnboarding }: { open: boolean; 
       <Button variant="secondary" className="w-full" onClick={() => (onClose(), onOnboarding())}>
         {t('Пройти знакомство заново')}
       </Button>
+      {/* только в разработке: витрина компонентов (в шапке прототипа ровно 4 кнопки) */}
+      {import.meta.env.DEV && (
+        <Button variant="secondary" className="mt-2.5 w-full" asChild>
+          <a href="/ui">UI kit</a>
+        </Button>
+      )}
     </SheetPage>
   );
 }

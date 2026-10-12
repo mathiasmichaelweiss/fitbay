@@ -208,7 +208,7 @@ export function Today({ date }: { date: string }) {
 
       <AddFood date={date} open={adding || !!editing} edit={editing} onClose={() => (setAdding(false), setEditing(null))} onQuickDay={() => setQuick(true)} />
       <QuickDay date={date} open={quick} onClose={() => setQuick(false)} />
-      <TrendSheet open={trend} onClose={() => setTrend(false)} />
+      <TrendSheet open={trend} onClose={() => setTrend(false)} date={date} meals={meals} />
     </Tiles>
   );
 }

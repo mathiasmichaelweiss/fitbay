@@ -2,8 +2,6 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import { de, ru } from 'date-fns/locale';
-import { PaletteIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { CalendarSheet } from '@/screens/CalendarSheet';
 import { ProfileSheet } from '@/screens/ProfileSheet';
 import { SettingsSheet } from '@/screens/SettingsSheet';
@@ -58,7 +56,7 @@ function ModeSw({ tabs, mode, onChange }: { tabs: [Mode, string][]; mode: Mode; 
             aria-pressed={on}
             onClick={() => !on && onChange(k)}
             className={cn(
-              'flex h-12 min-w-14 basis-14 shrink grow-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-full bg-[#1c1c1c] px-3.5 text-[0.95rem] text-[#bbb] transition-[flex-grow,background-color,color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] active:scale-[0.96] motion-reduce:transition-none',
+              'flex h-12 min-w-14 basis-14 shrink grow-0 items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-[#1c1c1c] px-3.5 text-[0.95rem] text-[#bbb] transition-[flex-grow,background-color,color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] active:scale-[0.96] motion-reduce:transition-none',
               on && 'grow bg-brand-cream font-semibold text-[#111]',
             )}
           >
@@ -66,7 +64,7 @@ function ModeSw({ tabs, mode, onChange }: { tabs: [Mode, string][]; mode: Mode; 
             <span
               className={cn(
                 'inline-block -ml-2 max-w-0 -translate-x-1.5 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity,transform] duration-500 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none',
-                on && 'ml-2 max-w-[140px] translate-x-0 opacity-100',
+                on && 'ml-0 max-w-[140px] translate-x-0 opacity-100',
               )}
             >
               {t(l)}
@@ -106,13 +104,6 @@ export function Shell() {
           {dayLabel}
         </button>
         <div className="flex gap-2">
-          {import.meta.env.DEV && (
-            <Button variant="tile" size="icon" asChild>
-              <a href="/ui" aria-label="UI kit" title="Библиотека компонентов">
-                <PaletteIcon className="size-5" />
-              </a>
-            </Button>
-          )}
           <TopBtn label={t('Уведомления')}>{ICON.bell}</TopBtn>
           <TopBtn label={t('Календарь')} onClick={() => setCal(true)}>{ICON.cal}</TopBtn>
           <TopBtn label={t('Тело и цели')} onClick={() => setProf(true)}>{ICON.prof}</TopBtn>

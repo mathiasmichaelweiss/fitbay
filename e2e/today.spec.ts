@@ -44,17 +44,25 @@ test('чек-ин: пустой нельзя сохранить', async ({ page 
   await expect(page.getByText('Отметь хотя бы один пункт.')).toBeVisible();
 });
 
-test('вес: запись за сегодня обновляется, а не дублируется', async ({ page }) => {
+test('жир и тенденция: взвешивание, «почему вес изменился», график веса', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('fat-tile').click();
-  const input = page.getByLabel('Вес сегодня, кг');
-  await input.fill('79,4');
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await input.fill('79,1');
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByTestId('row')).toHaveCount(1);
-  await expect(page.getByTestId('w-current')).toContainText('79,1');
-  await expect(page.getByTestId('w-change')).toContainText('0');
+  const sh = page.getByRole('dialog', { name: 'Жир и тенденция' });
+  await expect(sh.getByTestId('tr-weigh')).toContainText('Пора взвеситься');
+  await expect(sh.getByTestId('tr-weigh')).toContainText('Ты еще ни разу не записывал вес.');
+  await sh.getByLabel('Вес', { exact: true }).fill('79.4');
+  await sh.getByRole('button', { name: 'Записать' }).click();
+  const ins = page.getByTestId('w-insight');
+  await expect(ins).toContainText('80,0 → 79,4 кг');
+  await ins.getByRole('button', { name: 'Понятно' }).click();
+  await expect(sh.getByTestId('tr-weigh')).toContainText('Последнее взвешивание');
+  await expect(sh.getByTestId('w-info')).toHaveText('За период одно взвешивание');
+  await sh.getByLabel('Вес', { exact: true }).fill('79.1');
+  await sh.getByRole('button', { name: 'Записать' }).click();
+  await page.getByTestId('w-insight').getByRole('button', { name: 'Понятно' }).click();
+  await expect(sh.getByTestId('w-info')).toHaveText('За период одно взвешивание');
+  await sh.getByRole('radio', { name: 'Всё' }).click();
+  await expect(sh.getByTestId('w-chart')).toBeVisible();
 });
 
 test('экран без горизонтального скролла на 360 px', async ({ page }) => {

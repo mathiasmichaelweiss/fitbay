@@ -544,3 +544,4 @@ export function eta(p: Pick<CalcProfile, 'w' | 'tw' | 'goal'>): { weeks: number 
   return { weeks: Math.ceil(d / rate) };
 }
 export * from './train';
+export * from './weight';
