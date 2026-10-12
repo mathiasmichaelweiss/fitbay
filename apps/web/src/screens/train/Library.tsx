@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { SingleToggle } from '@/components/ui/toggle-group';
 import { useProgramDraft } from './Programs';
 import { useWorkouts } from '@/data/hooks';
-import { useEx } from './exercises';
+import { useEx, useExSteps, useTranslateNames } from './exercises';
 import { addToWorkout, useTrain } from './store';
 
 const COLORS = ['#FF5A0A', '#F2B705', '#F3EFE7', '#B2D8D8', '#7BC67B', '#F6B89A'];
@@ -41,6 +41,7 @@ export function Library() {
   const [eq, setEq] = useState('all');
   const [q, setQ] = useState('');
   const [lim, setLim] = useState(60);
+  const pct = useTranslateNames(lib);
   if (!db) return null;
   const L = libList(db.EX, db.GROUPS.find((x) => x[0] === grp)?.[2] ?? null, eq, q, (e) => name(e));
   const add = (id: string) => {
@@ -63,6 +64,11 @@ export function Library() {
       <div className="mb-1 mt-3 text-[0.8rem] opacity-55" data-testid="lib-count">
         {L.length} {t('упражнений')}
       </div>
+      {pct != null && (
+        <div className="mb-1.5 text-[0.8rem] text-brand-orange" data-testid="lib-tr">
+          {t('Перевожу названия упражнений...')} {pct}%
+        </div>
+      )}
       <Card className="gap-0 py-1.5">
         {L.slice(0, lim).map((e) => (
           <div key={e.i} className="flex items-center gap-3 border-t border-[#222] py-2.5 first:border-t-0" data-testid="exrow">
@@ -99,6 +105,7 @@ export function ExerciseSheet() {
   const { db, name, d } = useEx();
   const { data: workouts = [] } = useWorkouts();
   const e = ex && db ? db.EXM[ex] : null;
+  const steps = useExSteps(e ? e.i : null);
   const locale = i18n.language === 'de' ? de : ru;
   const hist = e ? workouts.filter((w) => w.items.some((i) => i.id === e.i)).slice(0, 5) : [];
   return (
@@ -125,8 +132,9 @@ export function ExerciseSheet() {
             </div>
             <div className="mt-3">
               <span className="text-sm text-muted-foreground">{t('Техника')}</span>
-              <ol className="my-1.5 pl-5">
-                {e.t.map((x, i) => (
+              {steps.isLoading && <p className="opacity-60">{t('Перевожу инструкцию...')}</p>}
+              <ol className="my-1.5 pl-5" data-testid="ex-steps">
+                {(steps.isLoading ? [] : (steps.data ?? e.t)).map((x, i) => (
                   <li key={i} className="mb-2">
                     {x}
                   </li>

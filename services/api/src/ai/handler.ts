@@ -9,10 +9,11 @@ import { AI_EQ, D, EX, EXM } from '@fitbay/shared/exercises';
 import { AiError, MockProvider, OpenAIProvider, parseJson, type Provider } from './provider';
 import { AIMSG, KIND, LIMITS } from './limits';
 import { JSON_TASKS, modelFor } from './config';
+import { exNames, exSteps } from './extr';
 
 /** Задачи, промпты которых уже перенесены. Остальные появятся вместе с их экранами (A3.4 тренировки, A4.3 план). */
-export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai', 'activity'];
-const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr'];
+export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai', 'activity', 'ex_names', 'ex_steps'];
+const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr', 'ex_names', 'ex_steps'];
 const UNAVAILABLE = 'ИИ недоступен в этом окне.';
 const DAY = 864e5;
 const U = (uid: string) => `USER#${uid}`;
@@ -53,6 +54,10 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
         const cached = await repo.get(U(who.uid), `COACH#${day}`);
         if (cached?.key === coachKey && cached.text) return json(200, { text: cached.text, cached: true });
       }
+
+      // Перевод упражнений: общий кэш, без дневного лимита (как в прототипе, где он не считался).
+      if (task === 'ex_names') return exNames(shared, provider, await modelFor(repo, task), lang, b.translate === true);
+      if (task === 'ex_steps') return exSteps(shared, provider, await modelFor(repo, task), lang, String(b.id ?? ''));
 
       if (!provider) throw new HttpError(503, UNAVAILABLE);
 

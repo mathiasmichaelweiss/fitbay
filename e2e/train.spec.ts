@@ -33,6 +33,16 @@ test('библиотека: группы, оборудование, поиск, 
   await expect(ex.getByRole('button', { name: 'Начать тренировку с этим упражнением' })).toBeVisible();
 });
 
+test('перевод упражнений: названия порциями в общий кэш, техника по запросу', async ({ page }) => {
+  await openTrain(page);
+  await page.getByTestId('t-lib').click();
+  const lib = page.getByRole('dialog', { name: 'Библиотека упражнений' });
+  await lib.getByLabel('Поиск упражнения').fill('(пер.)');
+  await expect(lib.getByTestId('lib-count')).toHaveText('851 упражнений', { timeout: 20000 });
+  await lib.getByText('Air Bike (пер.)').click();
+  await expect(page.getByTestId('ex-steps')).toContainText('Шаг первый (пер.)');
+});
+
 test('тренировка: подходы, «прошлый раз», завершение, история, счетчик недели', async ({ page }) => {
   await openTrain(page);
   await page.getByTestId('t-start').click();

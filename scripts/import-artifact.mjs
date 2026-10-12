@@ -1,5 +1,6 @@
 // Переносит пользователя из базы артефакта-прототипа (выгрузка data/users/<id>/*.json)
 // в локальную базу API (services/api/.data/db.json) под dev-пользователем.
+// Переводы упражнений (tr) уходят в общий кэш (db.shared-food.json рядом с базой).
 // Запуск: node scripts/import-artifact.mjs <папка выгрузки> [uid=local] [db=services/api/.data/db.json]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,6 +19,7 @@ const add = (SK, d, at) => {
   items.push({ ...rest, PK, SK, createdAt: iso(at), updatedAt: iso(at) });
 };
 const skipped = {};
+const shared = [];
 for (const d of docs) {
   switch (d.type) {
     case 'settings': {
@@ -39,6 +41,12 @@ for (const d of docs) {
       if (!d.none) add('WOACTIVE', d, d.start);
       else skipped.woactive = (skipped.woactive ?? 0) + 1;
       break;
+    case 'tr': {
+      const m = d.id.match(/^tr-(names|ex)-(ru|de)(?:-(.+))?$/);
+      if (m && m[1] === 'names') shared.push({ PK: `EXTR#${m[2]}`, SK: 'NAMES', map: d.map });
+      else if (m && m[3]) shared.push({ PK: `EXTR#${m[2]}`, SK: `EX#${m[3]}`, t: d.t });
+      break;
+    }
     default: skipped[d.type] = (skipped[d.type] ?? 0) + 1;
   }
 }
@@ -47,6 +55,20 @@ try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch { /* новой 
 db = db.filter((r) => r.PK !== PK).concat(items);
 fs.mkdirSync(path.dirname(dbFile), { recursive: true });
 fs.writeFileSync(dbFile, JSON.stringify(db, null, 1));
+if (shared.length) {
+  const sf = dbFile.replace(/\.json$/, '.shared-food.json');
+  let sd = [];
+  try { sd = JSON.parse(fs.readFileSync(sf, 'utf8')); } catch { /* нет */ }
+  const keys = new Set(shared.map((r) => r.PK + '|' + r.SK));
+  // уже переведенное в общем кэше дополняем, а не затираем
+  for (const r of shared) {
+    const old = sd.find((x) => x.PK === r.PK && x.SK === r.SK);
+    if (old && r.map) r.map = { ...old.map, ...r.map };
+  }
+  sd = sd.filter((x) => !keys.has(x.PK + '|' + x.SK)).concat(shared);
+  fs.writeFileSync(sf, JSON.stringify(sd, null, 1));
+  console.log('shared translations', shared.length, '->', sf);
+}
 const count = {};
 for (const i of items) { const k = i.SK.split('#')[0]; count[k] = (count[k] ?? 0) + 1; }
 console.log('imported', count, 'skipped', skipped, '->', dbFile);

@@ -68,6 +68,13 @@ export class MockProvider implements Provider {
   constructor(private answers: Record<string, string> = {}) {}
   async complete(a: CompleteArgs): Promise<Completion> {
     this.calls.push(a);
+    // перевод упражнений: те же ключи, к названию приписываем «(пер.)»
+    if (a.prompt.startsWith('Переведи названия упражнений')) {
+      const src = JSON.parse(a.prompt.slice(a.prompt.indexOf('{'))) as Record<string, string>;
+      const text = JSON.stringify(Object.fromEntries(Object.entries(src).map(([k, v]) => [k, `${v} (пер.)`])));
+      return { text, usage: { input: 1, output: 1 } };
+    }
+    if (a.prompt.startsWith('Переведи пошаговую')) return { text: JSON.stringify({ t: ['Шаг первый (пер.)', 'Шаг второй (пер.)'] }), usage: { input: 1, output: 1 } };
     const key = Object.keys({ ...MOCK_DEFAULTS, ...this.answers }).reverse().find((k) => a.prompt.includes(k));
     const text = key
       ? ({ ...MOCK_DEFAULTS, ...this.answers } as Record<string, string>)[key]!

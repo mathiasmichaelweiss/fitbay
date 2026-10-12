@@ -3,7 +3,9 @@ export type Role = 'client' | 'trainer' | 'partner' | 'studio' | 'admin';
 export type Lang = 'ru' | 'de' | 'en';
 export type AiTask =
   | 'food_photo' | 'food_text' | 'food_items' | 'food_portion' | 'food_mod' | 'day_story' | 'coach'
-  | 'activity' | 'recipe' | 'workout_ai' | 'plan_ai' | 'label_ocr';
+  | 'activity' | 'recipe' | 'workout_ai' | 'plan_ai' | 'label_ocr'
+  /** перевод названий и техники упражнений, общий кэш для всех */
+  | 'ex_names' | 'ex_steps';
 
 /** Версии текстов согласий (спека 4.9, 7). Новая версия текста = новый номер, пользователь соглашается заново. */
 export const CONSENT_VERSIONS = { health: 1, privacy: 1, trainer: 1 } as const;
