@@ -35,7 +35,7 @@ describe('локальный сервер', () => {
   });
   it('еда за день через query', async () => {
     await req('POST', '/me/meals', { date: '2026-10-12', kcal: 300 });
-    const r = await (await req('GET', '/me/meals?from=2026-10-12&to=2026-10-12')).json();
+    const r = (await (await req('GET', '/me/meals?from=2026-10-12&to=2026-10-12')).json()) as { items: unknown[] };
     expect(r.items).toHaveLength(1);
   });
   it('некорректный пользователь: 401', async () => expect((await req('GET', '/me/profile', undefined, 'bad user!')).status).toBe(401));
