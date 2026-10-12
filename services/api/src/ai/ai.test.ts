@@ -149,3 +149,36 @@ describe('рассказ за день', () => {
     expect(r.b.result.items[0].recId).toBe('r1');
   });
 });
+
+describe('добавить ингредиенты', () => {
+  it('промпт addIng из прототипа, считается в лимит еды', async () => {
+    const { call, provider, repo } = setup(new MockProvider({ 'Посчитай КБЖУ этих продуктов': '{"items":[{"n":"Масло","g":10,"kcal":90,"p":0,"f":10,"c":0}]}' }));
+    const r = await call('food_items', { text: '1 ст. л. масла' });
+    expect(r.b.result.items[0].n).toBe('Масло');
+    expect(provider!.calls[0]!.prompt).toContain('Посчитай КБЖУ этих продуктов, каждый отдельно: 1 ст. л. масла');
+    expect((await repo.get('USER#u1', 'USAGE#2026-10-12'))?.c).toEqual({ food: 1 });
+  });
+});
+
+describe('блюда из книги рецептов', () => {
+  it('сколько грамм съел: рецепт берётся из базы, посуда из прототипа', async () => {
+    const { call, repo, provider } = setup(new MockProvider({ 'Оцени, сколько грамм': '{"grams":320}' }));
+    await repo.put({ PK: 'USER#u1', SK: 'RECIPE#r1', name: 'Плов', desc: 'рис, говядина', grams: 300 });
+    const r = await call('food_portion', { recId: 'r1', said: 'большая тарелка', plate: { type: 'flat', size: 'L', fill: 'full' } });
+    expect(r.b.result.grams).toBe(320);
+    const p = provider!.calls[0]!.prompt;
+    expect(p).toContain('Блюдо из его книги рецептов: Плов. Состав: рис, говядина. Его обычная порция: 300 г.');
+    expect(p).toContain('посуда: Плоская, размер 28 см, заполнена: Полная.');
+  });
+  it('сегодня по-другому: изменения применяются к составу', async () => {
+    const { call, repo, provider } = setup(new MockProvider({ 'сегодня изменил состав': '{"items":[{"n":"Скир","g":160,"kcal":100,"p":17,"f":0,"c":6}],"note":"без фиников"}' }));
+    await repo.put({ PK: 'USER#u1', SK: 'RECIPE#r2', name: 'Скир с финиками', grams: 250 });
+    const r = await call('food_mod', { recId: 'r2', current: 'Скир: 200 г', change: 'без фиников' });
+    expect(r.b.result.note).toBe('без фиников');
+    expect(provider!.calls[0]!.prompt).toContain('Изменения сегодня: без фиников');
+  });
+  it('чужой или несуществующий рецепт: 404', async () => {
+    const { call } = setup();
+    expect((await call('food_portion', { recId: 'nope' })).s).toBe(404);
+  });
+});

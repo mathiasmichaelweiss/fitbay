@@ -41,15 +41,27 @@ export class OpenAIProvider implements Provider {
   }
 }
 
-/** Ответы-заглушки по задаче; prompt пишется в last для тестов. */
+/** Типовые ответы заглушки по задачам (для AI_MOCK=1 и e2e). */
+const MOCK_DEFAULTS: Record<string, string> = {
+  'Разбери рассказ': JSON.stringify({ items: [
+    { slot: 'breakfast', name: 'Омлет из трёх яиц', recId: null, grams: 180, kcal: 280, protein: 20, fat: 21, carbs: 2, desc: '3 яйца' },
+    { slot: 'lunch', name: 'Лосось с рисом', recId: null, grams: 350, kcal: 560, protein: 35, fat: 18, carbs: 60, desc: '' },
+    { slot: 'snack', name: 'Протеиновый батончик', recId: null, grams: 60, kcal: 210, protein: 20, fat: 7, carbs: 18, desc: '' },
+  ] }),
+  'Посчитай КБЖУ этих продуктов': JSON.stringify({ items: [{ n: 'Масло', g: 10, kcal: 90, p: 0, f: 10, c: 0 }] }),
+  'Оцени, сколько грамм': JSON.stringify({ grams: 300 }),
+  'сегодня изменил состав': JSON.stringify({ items: [{ n: 'Скир', g: 200, kcal: 130, p: 22, f: 0, c: 8 }], note: 'без фиников' }),
+};
+
+/** Ответы-заглушки по задаче; prompt пишется в calls для тестов. */
 export class MockProvider implements Provider {
   calls: CompleteArgs[] = [];
   constructor(private answers: Record<string, string> = {}) {}
   async complete(a: CompleteArgs): Promise<Completion> {
     this.calls.push(a);
-    const key = Object.keys(this.answers).find((k) => a.prompt.includes(k));
+    const key = Object.keys({ ...MOCK_DEFAULTS, ...this.answers }).reverse().find((k) => a.prompt.includes(k));
     const text = key
-      ? this.answers[key]!
+      ? ({ ...MOCK_DEFAULTS, ...this.answers } as Record<string, string>)[key]!
       : a.json
         ? JSON.stringify({ name: 'Тестовое блюдо', names: ['Тестовое блюдо'], grams: 250, kcal: 400, protein: 25, fat: 15, carbs: 40, confidence: 'средняя', note: 'mock', items: [{ n: 'Тест', g: 250, kcal: 400, p: 25, f: 15, c: 40 }] })
         : 'Тестовый совет коуча.';

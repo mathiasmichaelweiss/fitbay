@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Checkin, Meal, Measure, Profile } from '@fitbay/shared';
+import type { Checkin, Meal, Measure, Profile, Recipe } from '@fitbay/shared';
 import { target, sum, type CalcProfile, type MacroSum, type Target } from '@fitbay/calc';
 import { api, type Collection } from './api';
 
@@ -38,6 +38,8 @@ function useCol<T>(e: Collection) {
   };
 }
 export const useMealOps = () => useCol<Meal>('meals');
+export const useRecipes = () => useQuery({ queryKey: ['recipes'], queryFn: () => api.list<Recipe>('recipes') });
+export const useRecipeOps = () => useCol<Recipe>('recipes');
 export const useCheckinOps = () => useCol<Checkin>('checkins');
 export const useMeasureOps = () => useCol<Measure>('measures');
 

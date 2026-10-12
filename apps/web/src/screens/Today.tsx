@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { XIcon } from 'lucide-react';
-import { type Meal } from '@fitbay/shared';
+import type { Meal } from '@fitbay/shared';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Field } from '@/components/ui/field';
+import { FoodIcon } from '@/components/ui/food-icons';
 import { CapsRings, RC } from '@/components/ui/rings';
 import { Tile, Tiles } from '@/components/ui/tile';
 import { today, useDaySummary, useMealOps } from '@/data/hooks';
 import { groupMeals, SLOTN, withTs } from '@/lib/meals';
 import { CheckinTile } from './Checkin';
+import { AddFood } from './food/AddFood';
+import { QuickDay } from './food/QuickDay';
 
 /** Экран питания: порт сетки #nutri прототипа (плитки, круги, коуч, «Съедено»). */
 export function Today({ date }: { date: string }) {
   const { t, i18n } = useTranslation();
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<Meal | null>(null);
+  const [quick, setQuick] = useState(false);
   const { target: tg, eaten: s, meals } = useDaySummary(date);
   const { remove } = useMealOps();
   const loc = i18n.language === 'de' ? 'de-DE' : 'ru-RU';
@@ -110,6 +113,7 @@ export function Today({ date }: { date: string }) {
 
       <div className="col-span-full rounded-xl bg-brand-peach p-4 text-on-color">
         <span className="text-[0.68rem] font-semibold uppercase tracking-[0.06em] opacity-75">{t('СЪЕДЕНО')}</span>
+        {groups.length > 0 && !past && <div className="mt-0.5 text-[0.75rem] opacity-60">{t('Нажми на блюдо, чтобы изменить')}</div>}
         {groups.length === 0 ? (
           <div className="mt-2 text-[0.85rem] opacity-60">{t('Пока пусто')}</div>
         ) : (
@@ -124,15 +128,19 @@ export function Today({ date }: { date: string }) {
               </div>
               {gr.items.map((m) => (
                 <div key={m.id} data-testid="row" className="flex items-center gap-3 border-t border-black/12 py-2.5 first-of-type:border-t-0">
-                  <span className="grid size-12 flex-none place-items-center rounded-xl bg-black/8 text-xl" aria-hidden>
-                    🍽
-                  </span>
-                  <div className="min-w-0 flex-1">
+                  <FoodIcon name={m.name} thumb={m.thumb} />
+                  <button
+                    type="button"
+                    disabled={past}
+                    aria-label={`${t('Изменить блюдо')}: ${m.name}`}
+                    className="min-w-0 flex-1 text-left"
+                    onClick={() => setEditing(meals.find((x) => x.id === m.id) ?? null)}
+                  >
                     <div className="truncate font-semibold">{m.name}</div>
                     <div className="text-[0.8rem] opacity-65">
                       {i18n.language === 'de' ? `E ${m.protein} · F ${m.fat} · KH ${m.carbs}` : `Б ${m.protein} · Ж ${m.fat} · У ${m.carbs}`}
                     </div>
-                  </div>
+                  </button>
                   <div className="font-semibold tabular-nums">{m.kcal}</div>
                   {!past && (
                     <button type="button" className="grid size-11 place-items-center opacity-50" aria-label={`${t('Удалить')}: ${m.name}`} onClick={() => remove.mutate(m.id)}>
@@ -146,53 +154,8 @@ export function Today({ date }: { date: string }) {
         )}
       </div>
 
-      <AddFood date={date} open={adding} onClose={() => setAdding(false)} />
+      <AddFood date={date} open={adding || !!editing} edit={editing} onClose={() => (setAdding(false), setEditing(null))} onQuickDay={() => setQuick(true)} />
+      <QuickDay date={date} open={quick} onClose={() => setQuick(false)} />
     </Tiles>
-  );
-}
-
-/**
- * Временный ручной ввод (часть «Добавить еду» прототипа: название + КБЖУ, поле .g4).
- * Фото, посуда, описание и «Мои блюда» переносятся следующим шагом вместе с ИИ-прокси.
- */
-function AddFood({ date, open, onClose }: { date: string; open: boolean; onClose: () => void }) {
-  const { t } = useTranslation();
-  const { create } = useMealOps();
-  const [f, setF] = useState({ name: '', k: '', p: '', f: '', c: '' });
-  const n = (v: string) => Math.max(0, Math.round(Number(v.replace(',', '.')) || 0));
-  const valid = f.name.trim() !== '' && n(f.k) > 0;
-  const submit = () => {
-    const meal: Partial<Meal> & { date: string } = { date, name: f.name.trim(), kcal: n(f.k), protein: n(f.p), fat: n(f.f), carbs: n(f.c) };
-    create.mutate(meal, {
-      onSuccess: () => {
-        setF({ name: '', k: '', p: '', f: '', c: '' });
-        onClose();
-      },
-    });
-  };
-  const box = (k: keyof typeof f, label: string) => (
-    <Field label={label} value={f[k]} inputMode="numeric" className="[&_input]:text-center" onChange={(e) => setF((x) => ({ ...x, [k]: e.target.value }))} />
-  );
-
-  return (
-    <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>{t('Добавить еду')}</DrawerTitle>
-        </DrawerHeader>
-        <div className="grid gap-3">
-          <Field label={t('Название')} value={f.name} onChange={(e) => setF((x) => ({ ...x, name: e.target.value }))} />
-          <div className="grid grid-cols-4 gap-1.5">
-            {box('k', t('ккал'))}
-            {box('p', t('белки'))}
-            {box('f', t('жиры'))}
-            {box('c', t('углев.'))}
-          </div>
-          <Button className="w-full" disabled={!valid || create.isPending} onClick={submit}>
-            {t('Сохранить')}
-          </Button>
-        </div>
-      </DrawerContent>
-    </Drawer>
   );
 }

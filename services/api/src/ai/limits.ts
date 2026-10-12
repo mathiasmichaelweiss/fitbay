@@ -8,7 +8,7 @@ export const LIMITS: Record<'trial' | 'full' | 'unlimited', Record<Kind, number>
   unlimited: { food: 100, coach: 100, act: 100, trainer: 100, recipe: 100 },
 };
 export const KIND: Record<AiTask, Kind> = {
-  food_photo: 'food', food_text: 'food', day_story: 'food', label_ocr: 'food',
+  food_photo: 'food', food_text: 'food', food_items: 'food', food_portion: 'food', food_mod: 'food', day_story: 'food', label_ocr: 'food',
   coach: 'coach', activity: 'act', workout_ai: 'trainer', plan_ai: 'trainer', recipe: 'recipe',
 };
 /** Мягкие сообщения без слова «лимит» (AIMSG прототипа). */

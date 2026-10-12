@@ -2,7 +2,7 @@
 export type Role = 'client' | 'trainer' | 'partner' | 'studio' | 'admin';
 export type Lang = 'ru' | 'de' | 'en';
 export type AiTask =
-  | 'food_photo' | 'food_text' | 'day_story' | 'coach'
+  | 'food_photo' | 'food_text' | 'food_items' | 'food_portion' | 'food_mod' | 'day_story' | 'coach'
   | 'activity' | 'recipe' | 'workout_ai' | 'plan_ai' | 'label_ocr';
 
 /** Версии текстов согласий (спека 4.9, 7). Новая версия текста = новый номер, пользователь соглашается заново. */
@@ -53,7 +53,33 @@ export interface Meal {
   carbs: number;
   grams?: number;
   thumb?: string;
+  /** Как в прототипе: что ввёл пользователь, описание, состав, посуда, точность, рецепт. */
+  dish?: string;
+  desc?: string;
+  items?: { n: string; g: number; kcal: number; p: number; f: number; c: number }[] | null;
+  plate?: { type: string; size?: string; fill?: string };
+  confidence?: string;
+  recId?: string | null;
+  /** Время приёма (мс). Для «Весь день разом» ставится по слоту, иначе время создания. */
+  ts?: number;
   createdAt?: string;
+}
+
+/** Блюдо в «Моих блюдах» (recipe прототипа). p100: КБЖУ на 100 г, если известен вес порции. */
+export interface Recipe {
+  id: string;
+  name: string;
+  desc?: string;
+  grams?: number | null;
+  kcal: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  p100?: { kcal: number; protein: number; fat: number; carbs: number } | null;
+  items?: Meal['items'];
+  plate?: Meal['plate'];
+  thumb?: string;
+  used?: number;
 }
 
 /** Чек-ин (CI_M прототипа): каждый пункт 1..5, 5 = хорошо. Достаточно отметить один пункт. */

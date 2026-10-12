@@ -4,14 +4,14 @@ import { DynamoRepo, type Item, type Repo } from '../lib/repo';
 import { body, caller, handle, HttpError, json, type Event, type Result } from '../lib/http';
 import { communityHint, personalCorrections } from '../corrections/handler';
 import { communityHintText, personalHintText } from '../prompts/hints';
-import { coachPrompt, dayStoryPrompt, foodPrompt } from './prompts';
+import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt } from './prompts';
 import { AiError, MockProvider, OpenAIProvider, parseJson, type Provider } from './provider';
 import { AIMSG, KIND, LIMITS } from './limits';
 import { JSON_TASKS, modelFor } from './config';
 
 /** Задачи, промпты которых уже перенесены. Остальные появятся вместе с их экранами (A3.4 тренировки, A4.3 план). */
-export const PORTED: AiTask[] = ['food_photo', 'food_text', 'day_story', 'coach'];
-const ALL: AiTask[] = ['food_photo', 'food_text', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr'];
+export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach'];
+const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr'];
 const UNAVAILABLE = 'ИИ недоступен в этом окне.';
 const DAY = 864e5;
 const U = (uid: string) => `USER#${uid}`;
@@ -25,7 +25,7 @@ export function providerFromEnv(env = process.env): Provider | null {
 const asMeal = (i: Item): MealT => ({
   id: i.SK.slice(i.SK.indexOf('#') + 1), name: String(i.name ?? ''), kcal: +(i.kcal ?? 0) || 0, protein: +(i.protein ?? 0) || 0,
   fat: +(i.fat ?? 0) || 0, carbs: +(i.carbs ?? 0) || 0, slot: i.slot as MealT['slot'], desc: i.desc as string | undefined,
-  ts: Date.parse(String(i.createdAt ?? '')) || 0,
+  ts: Number(i.ts) || Date.parse(String(i.createdAt ?? '')) || 0,
 });
 const shift = (day: string, n: number) => new Date(Date.parse(`${day}T12:00:00Z`) + n * DAY).toISOString().slice(0, 10);
 
@@ -78,6 +78,22 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
           communityHintText(dish, await communityHint(shared, dish)),
           personalHintText(await personalCorrections(repo, who.uid)),
         );
+      } else if (task === 'food_items') {
+        const q = typeof b.text === 'string' ? b.text.trim().slice(0, 500) : '';
+        if (!q) throw new HttpError(400, 'text required');
+        prompt = foodItemsPrompt(q, lang);
+      } else if (task === 'food_portion' || task === 'food_mod') {
+        const rec = await repo.get(U(who.uid), `RECIPE#${String(b.recId ?? '')}`);
+        if (!rec) throw new HttpError(404, 'recipe not found');
+        const r = { name: String(rec.name ?? ''), desc: rec.desc as string | undefined, grams: Number(rec.grams) || undefined };
+        if (task === 'food_portion') {
+          const plate = typeof b.plate === 'object' && b.plate ? (b.plate as { type: string; size?: string; fill?: string }) : null;
+          prompt = foodPortionPrompt(r, typeof b.said === 'string' ? b.said.slice(0, 1000) : '', plate);
+        } else {
+          const change = typeof b.change === 'string' ? b.change.trim().slice(0, 500) : '';
+          if (!change) throw new HttpError(400, 'change required');
+          prompt = foodModPrompt(r.name, typeof b.current === 'string' ? b.current.slice(0, 3000) : `состав: ${r.desc || 'не указан'}`, change);
+        }
       } else if (task === 'day_story') {
         const txt = typeof b.text === 'string' ? b.text.trim().slice(0, 4000) : '';
         if (!txt) throw new HttpError(400, 'text required');

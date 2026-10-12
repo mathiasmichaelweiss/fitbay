@@ -5,10 +5,17 @@
  * Семантика local повторяет сервер: коллекции с id, «одна запись в день» по дате, единичные сущности.
  */
 export type Single = 'profile' | 'plan' | 'tips';
-export type Collection = 'meals' | 'measures' | 'checkins' | 'workouts' | 'activities';
+export type Collection = 'meals' | 'measures' | 'checkins' | 'workouts' | 'activities' | 'recipes';
 type Row = Record<string, unknown> & { id: string };
 
 const BY_DATE: Collection[] = ['measures', 'checkins'];
+
+/** Ошибка API с сообщением для пользователя (тексты сервера уже из прототипа). */
+export class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
 
 export interface Api {
   getOne<T>(e: Single): Promise<T | null>;
@@ -17,6 +24,8 @@ export interface Api {
   create<T>(e: Collection, data: Partial<T> & { date: string }): Promise<T>;
   update<T>(e: Collection, id: string, data: Partial<T>): Promise<T>;
   remove(e: Collection, id: string): Promise<void>;
+  /** Произвольный вызов API (ИИ, поправки, тренер). В режиме localStorage недоступен. */
+  call<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T>;
 }
 
 const KEY = 'fitbay.local.v1';
@@ -88,6 +97,9 @@ export const localApi: Api = {
     db.col[e] = (db.col[e] ?? []).filter((r) => r.id !== id);
     save(db);
   },
+  async call() {
+    throw new ApiError(503, 'ИИ недоступен в этом окне.');
+  },
 };
 
 /**
@@ -131,7 +143,10 @@ export function httpApi(base: string, token: () => Promise<string | null> = auth
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     if (r.status === 404 && method === 'GET') return null as T;
-    if (!r.ok) throw new Error(`${method} ${path}: ${r.status}`);
+    if (!r.ok) {
+      const j = (await r.json().catch(() => ({}))) as { error?: string; message?: string };
+      throw new ApiError(r.status, j.message ?? j.error ?? `${method} ${path}: ${r.status}`);
+    }
     return (r.status === 204 ? undefined : await r.json()) as T;
   };
   return {
@@ -144,6 +159,7 @@ export function httpApi(base: string, token: () => Promise<string | null> = auth
     create: (e, d) => req('POST', `/me/${e}`, d),
     update: (e, id, d) => req('PUT', `/me/${e}/${encodeURIComponent(id)}`, d),
     remove: (e, id) => req('DELETE', `/me/${e}/${encodeURIComponent(id)}`),
+    call: (method, path, body) => req(method, path, body),
   };
 }
 

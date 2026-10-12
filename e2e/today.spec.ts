@@ -11,24 +11,18 @@ test('плитки как в прототипе: калории, белок, д�
   await expect(page.getByTestId('coach')).toHaveText('День чистый. Начни с белкового завтрака, так проще закрыть средний круг.');
 });
 
-test('еда: добавить вручную, цифры и коуч пересчитываются, удалить', async ({ page }) => {
+test('коуч пересчитывается после еды, удаление возвращает цифры', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('add-food').click();
-  const sheet = page.getByRole('dialog');
-  await expect(sheet.getByRole('button', { name: 'Сохранить' })).toBeDisabled();
-  await sheet.getByLabel('Название').fill('Гречка с курицей');
-  await sheet.getByLabel('ккал').fill('520');
-  await sheet.getByLabel('белки').fill('42');
-  await sheet.getByRole('button', { name: 'Сохранить' }).click();
-
-  await expect(sheet).toBeHidden();
-  await expect(page.getByText('Гречка с курицей')).toBeVisible();
-  await expect(page.getByTestId('kcal-eaten')).toHaveText('520');
+  await page.getByRole('radio', { name: /Описать словами/ }).click();
+  await page.getByLabel('Блюдо').fill('Гречка с курицей');
+  await page.getByRole('button', { name: 'Посчитать' }).click();
+  await page.getByTestId('result').getByRole('button', { name: 'Сохранить' }).click();
+  await expect(page.getByTestId('kcal-eaten')).toHaveText('400');
   await expect(page.getByText('ЗАВТРАК ·', { exact: false })).toBeVisible(); // первый приём дня = завтрак (groupMeals)
-  await expect(page.getByTestId('coach')).toHaveText('86г белка до цели. Осталось 1930 ккал, этого хватит.');
-
+  await expect(page.getByTestId('coach')).toHaveText('103г белка до цели. Осталось 2050 ккал, этого хватит.');
   await page.reload();
-  await page.getByRole('button', { name: 'Удалить: Гречка с курицей' }).click();
+  await page.getByRole('button', { name: 'Удалить: Тестовое блюдо' }).click();
   await expect(page.getByTestId('kcal-eaten')).toHaveText('0');
 });
 

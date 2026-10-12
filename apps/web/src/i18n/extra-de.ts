@@ -29,4 +29,7 @@ export const extraDe: Record<string, string> = {
   // из прототипа (render(), инлайн-ветка lang === "de")
   'День чистый. Начни с белкового завтрака, так проще закрыть средний круг.': 'Der Tag ist leer. Starte mit einem eiweißreichen Frühstück, dann schließt du den mittleren Ring leichter.',
   'Все круги закрыты. Отличный день.': 'Alle Ringe geschlossen. Starker Tag.',
+  'Выбрать другое блюдо': 'Anderes Gericht wählen',
+  'без фиников, скира на 20% меньше': 'ohne Datteln, 20% weniger Skyr',
+  'средняя': 'mittel',
 };

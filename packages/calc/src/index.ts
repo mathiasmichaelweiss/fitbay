@@ -414,6 +414,7 @@ export interface MealLike {
   carbs: number;
   slot?: MealSlot;
   desc?: string;
+  thumb?: string;
 }
 export type MealT = MealLike & { ts: number };
 export interface MealGroup {
