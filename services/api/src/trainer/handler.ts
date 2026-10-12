@@ -15,6 +15,8 @@ const C = (uid: string) => `CLIENT#${uid}`;
 const DAY = 864e5;
 
 const strip = ({ PK: _p, SK, GSI1PK: _a, GSI1SK: _b, GSI2PK: _c, GSI2SK: _d, GSI3PK: _e, GSI3SK: _f, ...rest }: Item): Record<string, unknown> & { id: string } => ({ id: SK.slice(SK.indexOf('#') + 1), ...rest });
+/** Профиль тренера наружу: id = uid тренера (SK у профиля всегда PROFILE). */
+const tProfile = (it: Item) => ({ ...strip(it), id: String(it.PK).slice(8) });
 const isTrainer = (w: AuthContext) => w.roles.some((r) => r === 'trainer' || r === 'partner' || r === 'admin');
 const str = (v: unknown, max = 500) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
@@ -88,6 +90,11 @@ export function makeHandler(repo: Repo, now: () => number = Date.now) {
           const it: Item = {
             ...(prev ?? {}),
             name: str(b.name, 80), bio: str(b.bio, 2000), gym: str(b.gym, 200), city: str(b.city, 80),
+            // карточка каталога (renderCatList, renderTrainer прототипа)
+            spec: str(b.spec, 200), about: str(b.about, 2000), level: str(b.level, 80), price: str(b.price, 40),
+            exp: Math.max(0, Math.min(60, Number(b.exp) || 0)), sex: b.sex === 'm' || b.sex === 'f' ? b.sex : '',
+            edu: Array.isArray(b.edu) ? b.edu.filter((x): x is string => typeof x === 'string').slice(0, 8) : (prev?.edu ?? []),
+            online: b.online !== false, formats: Array.isArray(b.formats) ? b.formats.slice(0, 6) : (prev?.formats ?? []), color: str(b.color, 16),
             packages: Array.isArray(b.packages) ? b.packages.slice(0, 30) : (prev?.packages ?? []),
             rates: typeof b.rates === 'object' && b.rates ? b.rates : (prev?.rates ?? {}),
             tags: Array.isArray(b.tags) ? b.tags.slice(0, 20) : (prev?.tags ?? []),
@@ -204,19 +211,19 @@ export function makeHandler(repo: Repo, now: () => number = Date.now) {
 
       /* ---------- клиент: каталог, запись, заявки ---------- */
       if (route === '/trainers') {
-        const items = (await repo.queryIndex('GSI2', 'CATALOG')).map(strip).map(({ code: _code, ...t }) => t); // коды только у партнёров и не в каталоге
+        const items = (await repo.queryIndex('GSI2', 'CATALOG')).map(tProfile).map(({ code: _code, ...t }) => t); // коды только у партнёров и не в каталоге
         return json(200, { items });
       }
       if (route === '/trainers/by-code/{code}') {
         const hit = (await repo.queryIndex('GSI3', `CODE#${String(p.code).toUpperCase()}`))[0];
         if (!hit) throw new HttpError(404, 'code not found');
-        return json(200, strip(hit));
+        return json(200, tProfile(hit));
       }
       const tid = String(p.tid ?? '');
       if (route === '/trainers/{tid}') {
         const it = await getProfile(tid);
         if (!it) throw new HttpError(404, 'not found');
-        const { code: _c, ...t } = strip(it);
+        const { code: _c, ...t } = tProfile(it);
         return json(200, t);
       }
       if (route === '/trainers/{tid}/slots') {
@@ -271,6 +278,14 @@ export function makeHandler(repo: Repo, now: () => number = Date.now) {
         await repo.put(it);
         await notify(tid, { type: 'request', client: who.uid, req: id });
         return json(201, strip(it));
+      }
+      if (route === '/trainers/{tid}/requests/{id}') {
+        // клиент отзывает свою заявку, пока тренер не ответил (data-pdel прототипа)
+        const it = await repo.get(T(tid), `REQ#${p.id}`);
+        if (!it || it.uid !== who.uid) throw new HttpError(404, 'not found');
+        if (it.status !== 'new') throw new HttpError(409, 'already answered');
+        await repo.delete(T(tid), `REQ#${p.id}`);
+        return json(204, undefined);
       }
       if (route === '/trainers/{tid}/link') {
         // Связь клиент-тренер и согласие на доступ тренера к данным (спека 5.2, 5.3, A3.1).

@@ -1,3 +1,4 @@
+import { ShareBox } from './trainer/Share';
 import { BeforeAfterCard, MeasuresCard } from './Measures';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -203,6 +204,8 @@ export function ProfileSheet({ open, profile, onClose, focusMs }: { open: boolea
           </p>
         )}
       </div>
+
+      <ShareBox />
 
       <div className="mb-2.5 rounded-xl bg-card p-4">
         <div className="mb-1.5 text-[0.8rem] text-muted-foreground">{t('Сожженные калории в рацион')}</div>

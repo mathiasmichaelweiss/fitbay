@@ -13,6 +13,7 @@ import { shiftDay, today, useCoach, useDaySummary, useMealOps, useProfile, useSa
 import { FatTile } from './FatTile';
 import { TrendSheet } from './TrendSheet';
 import { MsRemindTile } from './Measures';
+import { TipTile } from './trainer/Tiles';
 import { groupMeals, SLOTN, withTs } from '@/lib/meals';
 import { CheckinTile } from './Checkin';
 import { AddFood } from './food/AddFood';
@@ -131,6 +132,7 @@ export function Today({ date }: { date: string }) {
 
       <CheckinTile />
       {date === today() && <MsRemindTile />}
+      <TipTile cat="food" />
 
       <div className="col-span-full rounded-xl bg-card p-4">
         <span className="text-[0.68rem] font-semibold tracking-[0.06em] text-muted-foreground">{t('КРУГИ ПИТАНИЯ')}</span>

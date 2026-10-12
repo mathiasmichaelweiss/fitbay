@@ -14,6 +14,13 @@ interface NavState {
   /** открыт лист «Тело и цели»; msFocus: прокрутить к замерам (msRemind прототипа) */
   prof: false | 'top' | 'ms';
   setProf: (v: false | 'top' | 'ms') => void;
+  /** листы тренера (A3.6) и колокольчик (A3.7) */
+  catalog: boolean;
+  trainer: string | null;
+  share: string | null | true;
+  tips: 'food' | 'train' | null;
+  bell: boolean;
+  open: (p: Partial<Pick<NavState, 'catalog' | 'trainer' | 'share' | 'tips' | 'bell'>>) => void;
   setOnboarding: (v: boolean) => void;
   setMode: (m: Mode) => void;
   setCabView: (v: CabView) => void;
@@ -37,6 +44,12 @@ export const useNav = create<NavState>((set, get) => ({
   onboarding: false,
   prof: false,
   setProf: (prof) => set({ prof }),
+  catalog: false,
+  trainer: null,
+  share: null,
+  tips: null,
+  bell: false,
+  open: (p) => set(p),
   setOnboarding: (onboarding) => set({ onboarding }),
   // как setMode прототипа: clients без тренера превращается в food
   setMode: (m) => {

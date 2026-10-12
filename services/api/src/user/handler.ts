@@ -28,7 +28,7 @@ export function makeHandler(repo: Repo) {
       // /me/... = свои данные, /users/{uid}/... = чужие (тренер, админ).
       const uid = p.uid ?? who.uid;
       const write = method !== 'GET';
-      await assertCanAccess(repo, who, uid, write);
+      await assertCanAccess(repo, who, uid, write, p.entity);
 
       // Экспорт и удаление аккаунта (DSGVO, спека 4.9).
       if (p.entity === undefined && e.rawPath.endsWith('/export')) {

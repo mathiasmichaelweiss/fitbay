@@ -50,4 +50,10 @@ export const extraDe: Record<string, string> = {
   "Ты ел больше расхода, тренировался и добирал белок. Часть прибавки это мышцы и запас гликогена с водой в мышцах, часть жир. Для набора это ожидаемо, держи профицит небольшим, 200-300 ккал.": "Du hast mehr gegessen als verbraucht, trainiert und genug Eiweiß gehabt. Ein Teil der Zunahme sind Muskeln und Glykogen mit Wasser in den Muskeln, ein Teil Fett. Beim Aufbau ist das normal, halte den Überschuss klein, 200-300 kcal.",
   "Ты ел больше расхода, а тренировок или белка было мало. Прибавка в основном жир и вода. Если цель не набор, верни дефицит и добавь силовые.": "Du hast mehr gegessen als verbraucht, aber wenig trainiert oder wenig Eiweiß gehabt. Die Zunahme ist vor allem Fett und Wasser. Wenn Aufbau nicht dein Ziel ist, geh zurück ins Defizit und mach Krafttraining.",
   "Калорий было больше расхода, поэтому настоящего похудения тут нет. Минус на весах это вода и содержимое кишечника.": "Die Kalorien lagen über dem Verbrauch, echtes Abnehmen ist das also nicht. Das Minus auf der Waage ist Wasser und Darminhalt.",
+  "питание по дням: калории, белки, жиры, углеводы;": "Ernährung nach Tagen: Kalorien, Eiweiß, Fett, Kohlenhydrate;",
+  "тренировки и активность;": "Training und Aktivität;",
+  "вес, замеры тела и твою цель.": "Gewicht, Körpermaße und dein Ziel.",
+  "Это данные о здоровье (ст. 9 DSGVO), поэтому нужно твое явное согласие. Отозвать его можно в любой момент в настройках, тогда тренер сразу перестанет видеть данные.": "Das sind Gesundheitsdaten (Art. 9 DSGVO), deshalb brauchen wir deine ausdrückliche Einwilligung. Du kannst sie jederzeit in den Einstellungen widerrufen, dann sieht der Trainer die Daten sofort nicht mehr.",
+  "Я согласен(на), чтобы тренер видел мои данные о питании, тренировках, весе и замерах": "Ich bin einverstanden, dass der Trainer meine Daten zu Ernährung, Training, Gewicht und Körpermaßen sieht",
+  "Я понимаю, что могу отозвать согласие в любой момент": "Ich weiß, dass ich die Einwilligung jederzeit widerrufen kann",
 };

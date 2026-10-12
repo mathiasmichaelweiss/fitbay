@@ -34,6 +34,7 @@ export const ROUTES: Route[] = [
   ...many(['/trainers', '/trainers/by-code/{code}', '/trainers/{tid}', '/trainers/{tid}/slots'], ['GET'], 'trainer'),
   ...many(['/trainers/{tid}/slots/{id}/book', '/trainers/{tid}/slots/{id}/cancel', '/trainers/{tid}/requests'], ['POST'], 'trainer'),
   ...many(['/trainers/{tid}/link'], ['PUT', 'DELETE'], 'trainer'),
+  { method: 'DELETE', path: '/trainers/{tid}/requests/{id}', handler: 'trainer' },
   ...many(['/me/bookings', '/me/requests', '/me/links', '/me/notifications'], ['GET'], 'trainer'),
   { method: 'POST', path: '/me/notifications/read', handler: 'trainer' },
   // A2.6: поправка веса при сохранении блюда

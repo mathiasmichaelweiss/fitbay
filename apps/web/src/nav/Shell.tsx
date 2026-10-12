@@ -10,6 +10,11 @@ import { SingleToggle } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { today, useProfile } from '@/data/hooks';
 import { Today } from '@/screens/Today';
+import { Catalog } from '@/screens/trainer/Catalog';
+import { TrainerSheet } from '@/screens/trainer/TrainerSheet';
+import { ShareSheet } from '@/screens/trainer/Share';
+import { TipsSheet } from '@/screens/trainer/Tiles';
+import { BellSheet, useBellCount } from '@/screens/trainer/Bell';
 import { Train } from '@/screens/train/Train';
 import { WoBar } from '@/screens/train/WorkoutSheet';
 import { useNav, type CabView, type Mode } from './store';
@@ -33,10 +38,15 @@ const ICON = {
 };
 
 /** .topic button прототипа: круг 44 px, фон плитки. */
-function TopBtn({ label, onClick, children }: { label: string; onClick?: () => void; children: ReactNode }) {
+function TopBtn({ label, onClick, children, badge }: { label: string; onClick?: () => void; children: ReactNode; badge?: number }) {
   return (
-    <button type="button" aria-label={label} onClick={onClick} className="grid size-11 place-items-center rounded-full bg-card text-[#ddd] active:scale-[0.94]">
+    <button type="button" aria-label={label} onClick={onClick} className="relative grid size-11 place-items-center rounded-full bg-card text-[#ddd] active:scale-[0.94]">
       {children}
+      {!!badge && (
+        <span data-testid="bell-n" className="absolute right-1 top-1 grid h-[17px] min-w-[17px] place-items-center rounded-[9px] bg-brand-orange px-1 text-[0.66rem] font-bold text-[#111]">
+          {badge > 9 ? '9+' : badge}
+        </span>
+      )}
     </button>
   );
 }
@@ -78,7 +88,8 @@ function ModeSw({ tabs, mode, onChange }: { tabs: [Mode, string][]; mode: Mode; 
 
 export function Shell() {
   const { t, i18n } = useTranslation();
-  const { mode, cabView, isTrainer, setMode, setCabView, prof, setProf } = useNav();
+  const { mode, cabView, isTrainer, setMode, setCabView, prof, setProf, open: openSheet, trainer } = useNav();
+  const bellN = useBellCount();
   const [day, setDay] = useState(today());
   const [cal, setCal] = useState(false);
   const [settings, setSettings] = useState(false);
@@ -103,7 +114,7 @@ export function Shell() {
           {dayLabel}
         </button>
         <div className="flex gap-2">
-          <TopBtn label={t('Уведомления')}>{ICON.bell}</TopBtn>
+          <TopBtn label={t('Уведомления')} badge={bellN} onClick={() => openSheet({ bell: true })}>{ICON.bell}</TopBtn>
           <TopBtn label={t('Календарь')} onClick={() => setCal(true)}>{ICON.cal}</TopBtn>
           <TopBtn label={t('Тело и цели')} onClick={() => setProf('top')}>{ICON.prof}</TopBtn>
           <TopBtn label={t('Настройки')} onClick={() => setSettings(true)}>{ICON.set}</TopBtn>
@@ -139,6 +150,11 @@ export function Shell() {
 
       <CalendarSheet open={cal} day={day} onPick={(d) => (setDay(d), setMode('food'))} onClose={() => setCal(false)} />
       {profile && <ProfileSheet open={!!prof} focusMs={prof === 'ms'} profile={profile} onClose={() => setProf(false)} />}
+      <Catalog />
+      {trainer && <TrainerSheet />}
+      <ShareSheet />
+      <TipsSheet />
+      <BellSheet />
       <SettingsSheet open={settings} onClose={() => setSettings(false)} onOnboarding={() => setOnboarding(true)} />
     </div>
   );

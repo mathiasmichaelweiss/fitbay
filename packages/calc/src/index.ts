@@ -545,3 +545,4 @@ export function eta(p: Pick<CalcProfile, 'w' | 'tw' | 'goal'>): { weeks: number 
 }
 export * from './train';
 export * from './weight';
+export * from './pkgprice';
