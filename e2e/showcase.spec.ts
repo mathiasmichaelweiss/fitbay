@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { seed } from './helpers';
 
 test('витрина: без горизонтального скролла на 390 px, поля 16 px', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -11,6 +12,8 @@ test('витрина: без горизонтального скролла на 
   await page.getByRole('button', { name: 'Открыть шторку' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 });
+
+test.beforeEach(({ page }) => seed(page));
 
 test('витрина открывается из шапки в режиме разработки', async ({ page }) => {
   await page.goto('/');

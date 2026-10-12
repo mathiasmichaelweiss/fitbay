@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Showcase } from './Showcase';
 import { Shell } from './nav/Shell';
 import { useNav } from './nav/store';
+import { Onboarding } from './screens/Onboarding';
+import { useProfile } from './data/hooks';
 
 const where = () => location.pathname + location.hash;
 
@@ -27,6 +29,10 @@ export function App() {
   const setTrainer = useNav((s) => s.setTrainer);
   // До Auth0: #/trainer включает роль тренера для проверки «Я / Кабинет».
   useEffect(() => setTrainer(loc.endsWith('#/trainer')), [loc, setTrainer]);
+  const { data: profile, isLoading } = useProfile();
   if (isShowcase(loc)) return <Showcase />;
+  if (isLoading) return null;
+  // Без профиля или без обязательных согласий приложение не открываем (DSGVO, спека 7).
+  if (!profile || !profile.consents?.health || !profile.consents?.privacy) return <Onboarding initial={profile} />;
   return <Shell />;
 }
