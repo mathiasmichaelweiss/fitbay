@@ -89,6 +89,19 @@ export class FitBayBetaStack extends Stack {
     const corrFn = fn('CorrectionsFn', 'api-corrections', 'corrections/handler.ts');
     main.grantReadWriteData(corrFn);
     sharedFood.grantReadWriteData(corrFn);
+    // A2.5: ИИ-прокси. Ключ OpenAI в код не попадает: при деплое задать OPENAI_API_KEY (позже Secrets Manager).
+    const aiFn = new NodejsFunction(this, 'AiFn', {
+      functionName: `${prefix}-api-ai`,
+      entry: path.join(__dirname, '../../services/api/src/ai/handler.ts'),
+      runtime: Runtime.NODEJS_24_X,
+      architecture: Architecture.ARM_64,
+      memorySize: 512,
+      timeout: Duration.seconds(60),
+      environment: { ...env, ...(process.env.OPENAI_API_KEY ? { OPENAI_API_KEY: process.env.OPENAI_API_KEY } : {}) },
+      bundling: { minify: true, sourceMap: true },
+    });
+    main.grantReadWriteData(aiFn);
+    sharedFood.grantReadData(aiFn);
 
     const api = new HttpApi(this, 'Api', {
       apiName: `${prefix}-api`,
@@ -99,6 +112,7 @@ export class FitBayBetaStack extends Stack {
       user: new HttpLambdaIntegration('UserInt', userFn),
       trainer: new HttpLambdaIntegration('TrainerInt', trainerFn),
       corrections: new HttpLambdaIntegration('CorrectionsInt', corrFn),
+      ai: new HttpLambdaIntegration('AiInt', aiFn),
     } as const;
     for (const r of ROUTES) {
       const integration = integrations[r.handler as keyof typeof integrations];

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupMeals, type MealT } from './meals';
+import { groupMeals, type MealT } from './index';
 
 const at = (h: number, m = 0) => new Date(2026, 9, 12, h, m).getTime();
 const meal = (ts: number, kcal: number, slot?: MealT['slot']): MealT =>

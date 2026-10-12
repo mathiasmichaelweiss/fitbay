@@ -38,6 +38,8 @@ export const ROUTES: Route[] = [
   { method: 'POST', path: '/me/notifications/read', handler: 'trainer' },
   // A2.6: поправка веса при сохранении блюда
   { method: 'POST', path: '/me/corrections', handler: 'corrections' },
+  // A2.5: ИИ-прокси
+  { method: 'POST', path: '/ai/{task}', handler: 'ai' },
 ];
 
 /** Сопоставление пути с шаблоном '/me/{entity}/{id}'. Возвращает параметры или null. */

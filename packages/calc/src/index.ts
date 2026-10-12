@@ -402,3 +402,77 @@ export function communityFor(index: Record<string, CommunityRow[]>, name: string
     .flatMap(([, v]) => v);
   return L.length ? wcAgg(L) : null;
 }
+
+/* ---- группировка приёмов пищи (groupMeals прототипа) ---- */
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+export interface MealLike {
+  id: string;
+  name: string;
+  kcal: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  slot?: MealSlot;
+  desc?: string;
+}
+export type MealT = MealLike & { ts: number };
+export interface MealGroup {
+  slot: MealSlot;
+  items: MealT[];
+  first: number;
+  last: number;
+  kcal: number;
+}
+
+/**
+ * groupMeals прототипа: приёмы ближе 20 минут склеиваются; первый кластер дня завтрак,
+ * крупные кластеры (≥ max(250, 12% нормы)) обед и ужин, остальное перекусы. Явный slot важнее.
+ */
+export function groupMeals(list: MealT[], targetK: number): MealGroup[] {
+  const ms = [...list].sort((a, b) => a.ts - b.ts);
+  const cl: { items: MealT[]; last: number; auto?: MealSlot }[] = [];
+  for (const m of ms) {
+    const c = cl[cl.length - 1];
+    if (c && m.ts - c.last <= 20 * 60000) {
+      c.items.push(m);
+      c.last = m.ts;
+    } else cl.push({ items: [m], last: m.ts });
+  }
+  const big = Math.max(250, (targetK || 2000) * 0.12);
+  let mains = 0;
+  for (const c of cl) {
+    const k = c.items.reduce((a, m) => a + (+m.kcal || 0), 0);
+    if (mains === 0) {
+      c.auto = 'breakfast';
+      mains++;
+    } else if (k >= big && mains < 3) {
+      c.auto = (['breakfast', 'lunch', 'dinner'] as const)[mains];
+      mains++;
+    } else c.auto = 'snack';
+  }
+  const out: MealGroup[] = [];
+  const map: Record<string, MealGroup> = {};
+  cl.forEach((c, ci) =>
+    c.items.forEach((m) => {
+      const sl = m.slot || c.auto!;
+      const key = sl === 'snack' ? `snack${m.slot ? 'm' : ci}` : sl;
+      let g = map[key];
+      if (!g) {
+        g = map[key] = { slot: sl, items: [], first: m.ts, last: m.ts, kcal: 0 };
+        out.push(g);
+      }
+      g.items.push(m);
+      g.first = Math.min(g.first, m.ts);
+      g.last = Math.max(g.last, m.ts);
+      g.kcal += +m.kcal || 0;
+    }),
+  );
+  out.forEach((g) => g.items.sort((a, b) => b.ts - a.ts));
+  return out.sort((a, b) => b.last - a.last);
+}
+
+export const SLOTN: Record<MealSlot, string> = { breakfast: 'Завтрак', lunch: 'Обед', dinner: 'Ужин', snack: 'Перекус' };
+
+
+/** Ключ набора еды за день (mealsKey прототипа): совет коуча не перезапрашивается, пока он не изменился. */
+export const mealsKey = (ms: { id: string; kcal: number; protein: number }[]) => `v2|${ms.map((m) => `${m.id}:${m.kcal}:${m.protein}`).join('|')}`;

@@ -1,6 +1,6 @@
 # FitBay
 
-Перенос прототипа FitBay (`kalorii.html`) в React-приложение. Спека: [docs/SPEC.md](docs/SPEC.md), ход работ: [docs/CHANGELOG.md](docs/CHANGELOG.md), задачи: [docs/TODO.md](docs/TODO.md).
+Перенос прототипа FitBay (`kalorii.html`) в React-приложение. Спека: [docs/SPEC.md](docs/SPEC.md), ход работ: [docs/CHANGELOG.md](docs/CHANGELOG.md), задачи: [docs/TODO.md](docs/TODO.md), локальный запуск: [docs/LOCAL.md](docs/LOCAL.md).
 
 ## Старт
 ```bash

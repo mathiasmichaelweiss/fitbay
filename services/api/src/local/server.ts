@@ -10,19 +10,21 @@ import { handler as health } from '../health';
 import { makeHandler as makeTrainer } from '../trainer/handler';
 import { makeHandler as makeCorrections } from '../corrections/handler';
 import { MemoryRepo } from '../lib/repo';
+import { makeHandler as makeAi, providerFromEnv } from '../ai/handler';
+import type { Provider } from '../ai/provider';
 
 type H = (e: Event) => Promise<Result>;
 
 /** Локальный API: те же обработчики, что в Lambda, маршрутизация как в API Gateway (HTTP API). */
 /** repo: fitbay-main, shared: fitbay-shared-food. */
-export function createServer(repo: Repo, opts: { shared?: Repo; origins?: string[]; auth?: ReturnType<typeof makeLocalAuth>; now?: () => number } = {}) {
+export function createServer(repo: Repo, opts: { shared?: Repo; ai?: Provider | null; origins?: string[]; auth?: ReturnType<typeof makeLocalAuth>; now?: () => number } = {}) {
   const shared = opts.shared ?? new MemoryRepo();
   const handlers: Record<Route['handler'], H | undefined> = {
     health: health as unknown as H,
     user: makeUser(repo),
     trainer: makeTrainer(repo, opts.now),
     corrections: makeCorrections(repo, shared, opts.now),
-    ai: undefined,
+    ai: makeAi(repo, shared, opts.ai === undefined ? providerFromEnv() : opts.ai, opts.now),
   };
   const auth = opts.auth ?? makeLocalAuth();
   const origins = opts.origins ?? ['http://localhost:5173', 'http://localhost:5174'];
@@ -84,6 +86,7 @@ if (process.argv[1]?.endsWith('server.ts')) {
   const file = process.env.DB_FILE ?? path.resolve(process.cwd(), '.data/db.json');
   const sharedFile = file.replace(/\.json$/, '.shared-food.json');
   createServer(new FileRepo(file), { shared: new FileRepo(sharedFile) }).listen(port, () => {
-    console.log(`FitBay API: http://localhost:${port}  (база: ${file}, вход: ${process.env.AUTH0_DOMAIN ? 'Auth0' : 'dev, заголовок x-dev-user'})`);
+    const ai = process.env.AI_MOCK === '1' ? 'заглушка (AI_MOCK)' : process.env.OPENAI_API_KEY ? 'OpenAI' : 'выключен (нет OPENAI_API_KEY)';
+    console.log(`FitBay API: http://localhost:${port}  (база: ${file}, вход: ${process.env.AUTH0_DOMAIN ? 'Auth0' : 'dev, заголовок x-dev-user'}, ИИ: ${ai})`);
   });
 }
