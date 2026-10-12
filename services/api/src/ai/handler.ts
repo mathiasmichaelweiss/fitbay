@@ -1,19 +1,20 @@
-import { age, aiCandidates, mealsKey, target, type CalcProfile, type MealT } from '@fitbay/calc';
+import { age, aiCandidates, clPatterns, mealsKey, type ClSnap, target, type CalcProfile, type MealT } from '@fitbay/calc';
 import type { AiTask } from '@fitbay/shared';
 import { DynamoRepo, type Item, type Repo } from '../lib/repo';
 import { body, caller, handle, HttpError, json, type Event, type Result } from '../lib/http';
 import { communityHint, personalCorrections } from '../corrections/handler';
 import { communityHintText, personalHintText } from '../prompts/hints';
-import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt, workoutPrompt, activityPrompt, activityEditPrompt, actShotsExtra, actTextExtra } from './prompts';
+import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt, workoutPrompt, activityPrompt, activityEditPrompt, clientAiPrompt, actShotsExtra, actTextExtra } from './prompts';
 import { AI_EQ, D, EX, EXM } from '@fitbay/shared/exercises';
 import { AiError, MockProvider, OpenAIProvider, parseJson, type Provider } from './provider';
 import { AIMSG, KIND, LIMITS } from './limits';
 import { JSON_TASKS, modelFor } from './config';
 import { exNames, exSteps } from './extr';
+import { clientSnapshot } from '../trainer/snapshot';
 
 /** Задачи, промпты которых уже перенесены. Остальные появятся вместе с их экранами (A3.4 тренировки, A4.3 план). */
-export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai', 'activity', 'ex_names', 'ex_steps'];
-const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr', 'ex_names', 'ex_steps'];
+export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai', 'activity', 'ex_names', 'ex_steps', 'client_ai'];
+const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr', 'ex_names', 'ex_steps', 'client_ai'];
 const UNAVAILABLE = 'ИИ недоступен в этом окне.';
 const DAY = 864e5;
 const U = (uid: string) => `USER#${uid}`;
@@ -153,6 +154,23 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
           prompt = activityPrompt(imgs.length ? actShotsExtra(imgs.length) : actTextExtra(txt), { sex: p.sex, age: p.birth ? age(p.birth, day) : (p.age ?? 30), h: p.h, w: p.w }, list, lang);
         }
         images = imgs.length ? imgs : undefined;
+      } else if (task === 'client_ai') {
+        const cid = String(b.cid ?? '');
+        const link = await repo.get(`TRAINER#${who.uid}`, `CLIENT#${cid}`);
+        if (!link?.consent) throw new HttpError(403, 'forbidden');
+        const c = await clientSnapshot(repo, cid, day);
+        const D = c.days.slice(-14).map((d) => ({ d: d.d, k: Math.round(d.k), p: Math.round(d.p), f: Math.round(d.f), c: Math.round(d.c), meals: d.items.map((i) => (i.ts ? `${new Date(i.ts).toTimeString().slice(0, 5)} ` : '') + `${i.name} ${i.kcal}`) }));
+        prompt = clientAiPrompt(
+          {
+            profile: c.profile,
+            targets: c.targets,
+            patterns: clPatterns({ ...c, profile: c.profile ?? undefined, targets: c.targets ?? undefined } as unknown as ClSnap, day, lang).map((x) => `${x.h}: ${x.x}`).join(' | '),
+            days: D,
+            workouts: c.workouts.slice(0, 10).map((w) => ({ d: w.date, t: w.title, min: w.min })),
+            measures: c.measures,
+          },
+          lang,
+        );
       } else if (task === 'workout_ai') {
         if (!prof) throw new HttpError(400, 'profile required');
         const place = (['gym', 'street', 'home'] as const).find((x) => x === b.place) ?? 'gym';
@@ -197,6 +215,7 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
       await repo.put({ ...usage, c: { ...c, [kind]: (c[kind] ?? 0) + 1 }, tokens: tk, ttl: Math.floor(now() / 1000) + 3 * 86400 });
       console.log(JSON.stringify({ ai: task, model, in: out.usage.input, out: out.usage.output }));
 
+      if (task === 'client_ai') return json(200, { text: out.text.replace(/\s*[—–]\s*/g, ', ').trim() });
       if (task === 'coach') {
         const text = out.text.replace(/\s*[—–]\s*/g, ', ').trim(); // как в прототипе: без длинного тире
         await repo.put({ PK: U(who.uid), SK: `COACH#${day}`, text, key: coachKey, at: now() });

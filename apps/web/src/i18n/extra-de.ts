@@ -56,4 +56,6 @@ export const extraDe: Record<string, string> = {
   "Это данные о здоровье (ст. 9 DSGVO), поэтому нужно твое явное согласие. Отозвать его можно в любой момент в настройках, тогда тренер сразу перестанет видеть данные.": "Das sind Gesundheitsdaten (Art. 9 DSGVO), deshalb brauchen wir deine ausdrückliche Einwilligung. Du kannst sie jederzeit in den Einstellungen widerrufen, dann sieht der Trainer die Daten sofort nicht mehr.",
   "Я согласен(на), чтобы тренер видел мои данные о питании, тренировках, весе и замерах": "Ich bin einverstanden, dass der Trainer meine Daten zu Ernährung, Training, Gewicht und Körpermaßen sieht",
   "Я понимаю, что могу отозвать согласие в любой момент": "Ich weiß, dass ich die Einwilligung jederzeit widerrufen kann",
+  "Повторы": "Wiederholungen",
+  "Видно только тебе. Данные тестовых пользователей хранятся отдельно, твой профиль, цели и записи они не трогают.": "Nur für dich sichtbar. Die Daten der Testnutzer werden getrennt gespeichert, dein Profil, deine Ziele und Einträge bleiben unberührt.",
 };

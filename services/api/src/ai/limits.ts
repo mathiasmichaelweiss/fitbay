@@ -10,7 +10,7 @@ export const LIMITS: Record<'trial' | 'full' | 'unlimited', Record<Kind, number>
 export const KIND: Record<AiTask, Kind> = {
   food_photo: 'food', food_text: 'food', food_items: 'food', food_portion: 'food', food_mod: 'food', day_story: 'food', label_ocr: 'food',
   coach: 'coach', activity: 'act', workout_ai: 'trainer', plan_ai: 'trainer', recipe: 'recipe',
-  ex_names: 'trainer', ex_steps: 'trainer', // не считаются: общий кэш, см. extr.ts
+  ex_names: 'trainer', ex_steps: 'trainer', client_ai: 'trainer', // не считаются: общий кэш, см. extr.ts
 };
 /** Мягкие сообщения без слова «лимит» (AIMSG прототипа). */
 export const AIMSG: Record<Kind, string> = {

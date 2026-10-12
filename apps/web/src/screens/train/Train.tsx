@@ -8,7 +8,6 @@ import { loadActive, usePrograms, useProfile, useWorkouts } from '@/data/hooks';
 import { useEx } from './exercises';
 import { startWorkout, useTrain } from './store';
 import { Library, ExerciseSheet } from './Library';
-import { WorkoutSheet } from './WorkoutSheet';
 import { ProgramsSheet, ProgramEditor } from './Programs';
 import { HistorySheet } from './History';
 import { AiTrainer } from './AiTrainer';
@@ -82,7 +81,6 @@ export function Train() {
       </Tile>
 
       <ActivitySheet open={act} onClose={() => setAct(false)} />
-      <WorkoutSheet />
       <ProgramsSheet />
       <ProgramEditor />
       <HistorySheet />

@@ -195,3 +195,14 @@ export const actShotsExtra = (n: number) => `На ${n} скриншотах из
 export function activityEditPrompt(cur: { name: string; min?: string | number; km?: string | number; steps?: string | number; kcal?: string | number }, p: { w: number; h: number }): string {
   return `Ты фитнес-ассистент. Обнови одну запись активности по скриншотам из фитнес-приложения. Текущая запись: ${cur.name}, ${cur.min || 0} мин, ${cur.km || '-'} км, ${cur.steps || '-'} шагов, ${cur.kcal || 0} ккал. Человек: ${p.w} кг, ${p.h} см. Возьми с изображения итоговые значения именно для этой активности (не суммируй с текущими, это обновленный итог). Если активные калории выглядят завышенными, скорректируй вниз; если их нет, посчитай по MET. Ответь только JSON: {"min":число,"km":число или null,"steps":число или null,"kcal":число}`;
 }
+
+/* ---------- AI-разбор клиента для тренера (clAIRun прототипа), текст дословно ---------- */
+export function clientAiPrompt(c: { profile: unknown; targets: unknown; patterns: string; days: unknown; workouts: unknown; measures: unknown }, lang: string): string {
+  const de = lang === 'de';
+  return `Ты помогаешь фитнес-тренеру разобрать клиента. ${de ? 'Antworte auf Deutsch' : 'Пиши по-русски'}, живым языком тренеру (не клиенту), без тире "—". Формат: 3 блока с заголовками ${de ? '"Muster", "Mögliche Ursachen", "Was vorschlagen"' : '"Паттерны", "Вероятные причины", "Что предложить"'} (по 2-4 коротких пункта, начинай с "• "). Конкретно, с цифрами из данных, без общих фраз и без морализаторства.
+Профиль: ${JSON.stringify(c.profile)}. Норма: ${JSON.stringify(c.targets)}.
+Найденные паттерны: ${c.patterns}
+Дни: ${JSON.stringify(c.days)}
+Тренировки: ${JSON.stringify(c.workouts)}
+Замеры: ${JSON.stringify(c.measures)}`;
+}

@@ -17,6 +17,7 @@ import { today, useProfile, useProgramOps, useWorkoutOps, useWorkouts } from '@/
 import { useEx } from './exercises';
 import { ExIcon } from './Library';
 import { endEdit, useTrain } from './store';
+import { useTrFinish } from '@/screens/cabinet/Workouts';
 
 type Note = { tags?: string[]; note?: string; noteOpen?: boolean };
 
@@ -92,6 +93,7 @@ export function WorkoutSheet() {
   const { data: profile } = useProfile();
   const ops = useWorkoutOps();
   const progOps = useProgramOps();
+  const trFinish = useTrFinish();
   const [asProg, setAsProg] = useState(false);
   const [err, setErr] = useState('');
   const [, tick] = useState(0);
@@ -110,6 +112,7 @@ export function WorkoutSheet() {
   const cancel = async () => {
     if (isEdit) return endEdit();
     if (await askConfirm(t('Отменить тренировку? Записанные подходы не сохранятся.'))) {
+      if (a.forClient) return trFinish(a, null);
       setActive(null);
       set({ wo: false });
     }
@@ -120,6 +123,7 @@ export function WorkoutSheet() {
     if (!items.length) return setErr(t('Отметь хотя бы один выполненный подход галочкой.'));
     setErr('');
     try {
+      if (a.forClient) return await trFinish(a, items);
       if (isEdit) {
         await ops.update.mutateAsync({ id: a.editId as string, title: a.title || t('Тренировка'), items, ...wn });
         return endEdit();

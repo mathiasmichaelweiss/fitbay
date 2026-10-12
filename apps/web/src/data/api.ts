@@ -130,16 +130,46 @@ export const devUser = {
  */
 export const auth = { token: async (): Promise<string | null> => null };
 
+/** A6.1: открытый тестовый пользователь владельца (fb_tu прототипа). Запросы идут с x-act-as. */
+export interface TestUser {
+  id: string;
+  uid: string;
+  roles: string;
+  name: string;
+  kind: string;
+}
+export const testUser = {
+  get(): TestUser | null {
+    try {
+      return JSON.parse(localStorage.getItem('fb_tu') ?? 'null') as TestUser | null;
+    } catch {
+      return null;
+    }
+  },
+  /** tuSwitch прототипа: переключиться и перезагрузить страницу (кэш данных другого пользователя не нужен) */
+  switch(u: TestUser | null) {
+    try {
+      if (u) localStorage.setItem('fb_tu', JSON.stringify(u));
+      else localStorage.removeItem('fb_tu');
+    } catch {
+      /* нет хранилища */
+    }
+    location.reload();
+  },
+};
+
 /** HTTP-режим: те же операции поверх /me/... */
 export function httpApi(base: string, token: () => Promise<string | null> = auth.token): Api {
   const req = async <T>(method: string, path: string, body?: unknown): Promise<T> => {
     const t = await token();
     const who = devUser.get();
+    const tu = testUser.get();
     const r = await fetch(`${base}${path}`, {
       method,
       headers: {
         'content-type': 'application/json',
         ...(t ? { authorization: `Bearer ${t}` } : { 'x-dev-user': who.uid, 'x-dev-roles': who.roles }),
+        ...(tu ? { 'x-act-as': tu.uid, 'x-act-roles': tu.roles } : {}),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
     });

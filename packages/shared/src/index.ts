@@ -5,7 +5,9 @@ export type AiTask =
   | 'food_photo' | 'food_text' | 'food_items' | 'food_portion' | 'food_mod' | 'day_story' | 'coach'
   | 'activity' | 'recipe' | 'workout_ai' | 'plan_ai' | 'label_ocr'
   /** перевод названий и техники упражнений, общий кэш для всех */
-  | 'ex_names' | 'ex_steps';
+  | 'ex_names' | 'ex_steps'
+  /** AI-разбор клиента для тренера (clAIRun прототипа) */
+  | 'client_ai';
 
 /** Версии текстов согласий (спека 4.9, 7). Новая версия текста = новый номер, пользователь соглашается заново. */
 export const CONSENT_VERSIONS = { health: 1, privacy: 1, trainer: 1 } as const;

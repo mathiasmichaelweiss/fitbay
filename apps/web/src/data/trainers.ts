@@ -35,6 +35,7 @@ export interface Slot {
   burned?: { at: number; reason?: string } | null;
   cancel?: { by: 'client' | 'trainer'; at: number; reason?: string } | null;
   plan?: { name?: string; note?: string; items?: { id: string; sets?: number; reps?: string; name?: string }[] } | null;
+  tnote?: { tags?: string[]; note?: string; at?: number; by?: string } | null;
 }
 export interface PkgReq {
   id: string;

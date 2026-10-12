@@ -1,3 +1,5 @@
+import { ClientsList } from '@/screens/cabinet/Clients';
+import { Schedule } from '@/screens/cabinet/Schedule';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
@@ -16,7 +18,7 @@ import { ShareSheet } from '@/screens/trainer/Share';
 import { TipsSheet } from '@/screens/trainer/Tiles';
 import { BellSheet, useBellCount } from '@/screens/trainer/Bell';
 import { Train } from '@/screens/train/Train';
-import { WoBar } from '@/screens/train/WorkoutSheet';
+import { WoBar, WorkoutSheet } from '@/screens/train/WorkoutSheet';
 import { useNav, type CabView, type Mode } from './store';
 
 /** Иконки .top и NAVI прототипа (svg дословно). */
@@ -103,6 +105,7 @@ export function Shell() {
   return (
     <div className="mx-auto min-h-dvh w-full max-w-[520px] px-[14px] pb-[calc(24px+env(safe-area-inset-bottom))] pt-[14px]">
       <WoBar />
+      <WorkoutSheet />
       {/* .top прототипа */}
       <header className="mx-1 mb-3.5 mt-1 flex items-center justify-between gap-2">
         <button
@@ -141,9 +144,15 @@ export function Shell() {
                 ]}
               />
             </div>
-            <Tiles>
-              <Tile full color="dark" label={t(cabView === 'list' ? 'Клиенты' : cabView === 'sched' ? 'Расписание' : 'Обзор')} title={t('Скоро здесь будет раздел')} />
-            </Tiles>
+            {cabView === 'list' ? (
+              <ClientsList />
+            ) : cabView === 'sched' ? (
+              <Schedule />
+            ) : (
+              <Tiles>
+                <Tile full color="dark" label={t('Обзор')} title={t('Скоро здесь будет раздел')} />
+              </Tiles>
+            )}
           </div>
         )}
       </main>
