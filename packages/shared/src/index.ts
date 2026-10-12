@@ -102,8 +102,25 @@ export interface Checkin {
 export interface Measure {
   id: string;
   date: string;
+  at?: number;
   weight?: number;
   waist?: number;
+  chest?: number;
+  hips?: number;
+  thigh?: number;
+  biceps?: number;
+  neck?: number;
+  calf?: number;
+}
+
+/** «До и после» (ba прототипа): два фото с датой и весом, статус проверки командой, согласие на публикацию. */
+export interface BeforeAfter {
+  before?: { img: string; date: string; w?: number };
+  after?: { img: string; date: string; w?: number };
+  status?: 'draft' | 'pending' | 'verified' | 'rejected';
+  note?: string;
+  consent?: { publish: boolean; hideFace: boolean; at: number; version: number };
+  sentAt?: number;
 }
 
 /** Подход в истории тренировки (r повторы, w кг, d выполнен). */

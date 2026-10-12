@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
 import { today, useCheckinOps, useCheckins } from '@/data/hooks';
+import { CiGrid } from './CiGrid';
 
 /** Порт CI_F, CI_M прототипа. */
 export const CI_F = ['😫', '😕', '😐', '🙂', '😄'];
@@ -118,6 +119,7 @@ function Spark({ list, n }: { list: Checkin[]; n: number }) {
 function CheckinDrawer({ open, initial, onClose }: { open: null | { quick?: number }; initial: Checkin | null; onClose: () => void }) {
   const { t } = useTranslation();
   const { update } = useCheckinOps();
+  const { data: list = [] } = useCheckins();
   const [d, setD] = useState<Partial<Record<CiKey, number>> & { note?: string }>({});
   const [err, setErr] = useState('');
   const [was, setWas] = useState<typeof open>(null);
@@ -190,6 +192,12 @@ function CheckinDrawer({ open, initial, onClose }: { open: null | { quick?: numb
         <Button className="mt-2.5 w-full" onClick={save} disabled={update.isPending}>
           {t('Сохранить')}
         </Button>
+        {list.length > 0 && (
+          <div className="mt-4 rounded-xl bg-card p-4">
+            <div className="mb-2 text-sm text-muted-foreground">{t('Последние дни')}</div>
+            <CiGrid list={list} />
+          </div>
+        )}
         <p className="mt-3 text-[0.78rem] leading-[1.45] text-muted-foreground">
           {t('Если у тебя есть тренер и ты открыл ему данные, он видит отметки и получает сигнал, если несколько дней подряд тебе плохо.')}
         </p>

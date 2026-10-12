@@ -78,10 +78,9 @@ function ModeSw({ tabs, mode, onChange }: { tabs: [Mode, string][]; mode: Mode; 
 
 export function Shell() {
   const { t, i18n } = useTranslation();
-  const { mode, cabView, isTrainer, setMode, setCabView } = useNav();
+  const { mode, cabView, isTrainer, setMode, setCabView, prof, setProf } = useNav();
   const [day, setDay] = useState(today());
   const [cal, setCal] = useState(false);
-  const [prof, setProf] = useState(false);
   const [settings, setSettings] = useState(false);
   const { data: profile } = useProfile();
   const setOnboarding = useNav((s) => s.setOnboarding);
@@ -106,7 +105,7 @@ export function Shell() {
         <div className="flex gap-2">
           <TopBtn label={t('Уведомления')}>{ICON.bell}</TopBtn>
           <TopBtn label={t('Календарь')} onClick={() => setCal(true)}>{ICON.cal}</TopBtn>
-          <TopBtn label={t('Тело и цели')} onClick={() => setProf(true)}>{ICON.prof}</TopBtn>
+          <TopBtn label={t('Тело и цели')} onClick={() => setProf('top')}>{ICON.prof}</TopBtn>
           <TopBtn label={t('Настройки')} onClick={() => setSettings(true)}>{ICON.set}</TopBtn>
         </div>
       </header>
@@ -139,7 +138,7 @@ export function Shell() {
       </main>
 
       <CalendarSheet open={cal} day={day} onPick={(d) => (setDay(d), setMode('food'))} onClose={() => setCal(false)} />
-      {profile && <ProfileSheet open={prof} profile={profile} onClose={() => setProf(false)} />}
+      {profile && <ProfileSheet open={!!prof} focusMs={prof === 'ms'} profile={profile} onClose={() => setProf(false)} />}
       <SettingsSheet open={settings} onClose={() => setSettings(false)} onOnboarding={() => setOnboarding(true)} />
     </div>
   );

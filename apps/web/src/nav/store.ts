@@ -11,6 +11,9 @@ interface NavState {
   isTrainer: boolean; // заглушка до Auth0 (A2.2): роль придет из JWT
   /** «Пройти знакомство заново» из настроек */
   onboarding: boolean;
+  /** открыт лист «Тело и цели»; msFocus: прокрутить к замерам (msRemind прототипа) */
+  prof: false | 'top' | 'ms';
+  setProf: (v: false | 'top' | 'ms') => void;
   setOnboarding: (v: boolean) => void;
   setMode: (m: Mode) => void;
   setCabView: (v: CabView) => void;
@@ -32,6 +35,8 @@ export const useNav = create<NavState>((set, get) => ({
   cabView: 'list',
   isTrainer: false,
   onboarding: false,
+  prof: false,
+  setProf: (prof) => set({ prof }),
   setOnboarding: (onboarding) => set({ onboarding }),
   // как setMode прототипа: clients без тренера превращается в food
   setMode: (m) => {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { BeforeAfterCard, MeasuresCard } from './Measures';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { ACTS, eta, target, type Activity, type CalcProfile, type Goal } from '@fitbay/calc';
@@ -41,7 +42,10 @@ export function MacroSum({ p, f, c }: M) {
   );
 }
 
-export function ProfileSheet({ open, profile, onClose }: { open: boolean; profile: Profile; onClose: () => void }) {
+export function ProfileSheet({ open, profile, onClose, focusMs }: { open: boolean; profile: Profile; onClose: () => void; focusMs?: boolean }) {
+  useEffect(() => {
+    if (open && focusMs) setTimeout(() => document.getElementById('msCard')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 250);
+  }, [open, focusMs]);
   const ctx = useDayCtx();
   const { t, i18n } = useTranslation();
   const de = i18n.language === 'de';
@@ -217,6 +221,10 @@ export function ProfileSheet({ open, profile, onClose }: { open: boolean; profil
       <Button className="w-full" disabled={save.isPending} onClick={submit}>
         {t('Сохранить')}
       </Button>
+      <div className="mt-3.5">
+        <BeforeAfterCard />
+        <MeasuresCard />
+      </div>
     </SheetPage>
   );
 }

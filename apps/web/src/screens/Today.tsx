@@ -12,6 +12,7 @@ import { api, ApiError } from '@/data/api';
 import { shiftDay, today, useCoach, useDaySummary, useMealOps, useProfile, useSaveProfile } from '@/data/hooks';
 import { FatTile } from './FatTile';
 import { TrendSheet } from './TrendSheet';
+import { MsRemindTile } from './Measures';
 import { groupMeals, SLOTN, withTs } from '@/lib/meals';
 import { CheckinTile } from './Checkin';
 import { AddFood } from './food/AddFood';
@@ -129,6 +130,7 @@ export function Today({ date }: { date: string }) {
       />
 
       <CheckinTile />
+      {date === today() && <MsRemindTile />}
 
       <div className="col-span-full rounded-xl bg-card p-4">
         <span className="text-[0.68rem] font-semibold tracking-[0.06em] text-muted-foreground">{t('КРУГИ ПИТАНИЯ')}</span>

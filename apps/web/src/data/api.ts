@@ -4,7 +4,7 @@
  * - http: REST из services/api (маршруты /me/...), включается переменной VITE_API_URL.
  * Семантика local повторяет сервер: коллекции с id, «одна запись в день» по дате, единичные сущности.
  */
-export type Single = 'profile' | 'plan' | 'tips' | 'active-workout';
+export type Single = 'profile' | 'plan' | 'tips' | 'active-workout' | 'before-after';
 export type Collection = 'meals' | 'measures' | 'checkins' | 'workouts' | 'programs' | 'activities' | 'recipes';
 type Row = Record<string, unknown> & { id: string };
 
