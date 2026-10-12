@@ -36,34 +36,34 @@ export function Progress() {
   const start = weights[0]?.weight ?? profile?.w;
   const current = weights.at(-1)?.weight ?? profile?.w;
   const diff = start !== undefined && current !== undefined ? current - start : 0;
-  const kg = t('weight.kg');
+  const kg = t('кг');
 
   return (
     <div className="grid gap-4">
       <Tiles>
-        <Tile label={t('weight.current')} value={current !== undefined ? `${fmt(current)} ${kg}` : '…'} tone="teal" />
-        <Tile label={t('weight.target')} value={profile?.tw ? `${fmt(profile.tw)} ${kg}` : '…'} tone="yellow" />
-        <Tile label={t('weight.start')} value={start !== undefined ? `${fmt(start)} ${kg}` : '…'} />
-        <Tile label={t('weight.change')} value={`${diff > 0 ? '+' : ''}${fmt(diff)} ${kg}`} tone={diff <= 0 ? 'teal' : 'orange'} />
+        <Tile color="teal" label={t('Сейчас')} small value={current !== undefined ? fmt(current) : '…'} sub={kg} data-testid="w-current" />
+        <Tile color="yellow" label={t('Цель')} small value={profile?.tw ? fmt(profile.tw) : '…'} sub={kg} />
+        <Tile color="dark" label={t('Старт')} small value={start !== undefined ? fmt(start) : '…'} sub={kg} />
+        <Tile color={diff <= 0 ? 'cream' : 'orange'} label={t('Изменение')} small value={`${diff > 0 ? '+' : diff < 0 ? '−' : ''}${fmt(Math.abs(diff))}`} sub={kg} data-testid="w-change" />
       </Tiles>
 
       <Card>
-        <CardTitle>{t('weight.add')}</CardTitle>
-        <Field label={t('weight.today')} inputMode="decimal" placeholder={todays ? fmt(todays.weight) : ''} value={input} onChange={(e) => setInput(e.target.value)} />
+        <CardTitle>{t('Записать вес')}</CardTitle>
+        <Field label={t('Вес сегодня, кг')} inputMode="decimal" placeholder={todays ? fmt(todays.weight) : ''} value={input} onChange={(e) => setInput(e.target.value)} />
         <Button
           className="w-full"
           disabled={!valid || update.isPending}
           onClick={() => update.mutate({ id: today(), date: today(), weight: Math.round(n * 10) / 10 }, { onSuccess: () => setInput('') })}
         >
-          {t('weight.save')}
+          {t('Сохранить')}
         </Button>
       </Card>
 
       <Card className="gap-2">
-        <CardTitle>{t('weight.history')}</CardTitle>
+        <CardTitle>{t('История веса')}</CardTitle>
         <Spark values={weights.map((w) => w.weight)} />
         {weights.length === 0 ? (
-          <p className="m-0 text-sm text-muted-foreground">{t('weight.empty')}</p>
+          <p className="m-0 text-sm text-muted-foreground">{t('Пока нет записей')}</p>
         ) : (
           <ul className="m-0 grid list-none p-0">
             {[...weights].reverse().slice(0, 30).map((w) => (
@@ -72,7 +72,7 @@ export function Progress() {
                 <span className="font-semibold tabular-nums">
                   {fmt(w.weight)} {kg}
                 </span>
-                <Button variant="ghost" size="icon" aria-label={`${t('weight.delete')}: ${w.date}`} onClick={() => remove.mutate(w.id)}>
+                <Button variant="ghost" size="icon" aria-label={`${t('Удалить')}: ${w.date}`} onClick={() => remove.mutate(w.id)}>
                   <XIcon className="size-5" />
                 </Button>
               </li>

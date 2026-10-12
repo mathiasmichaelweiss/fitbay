@@ -1,0 +1,1110 @@
+{
+ "targets": [
+  {
+   "name": "m30 keep act3 | pct .5 no act",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 2450,
+    "k": 2450,
+    "p": 128,
+    "f": 72,
+    "c": 322,
+    "tdee": 2448,
+    "bmr": 1780
+   }
+  },
+  {
+   "name": "m30 keep act3 | pct .5 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 2450,
+    "k": 2600,
+    "p": 128,
+    "f": 72,
+    "c": 359,
+    "tdee": 2448,
+    "bmr": 1780
+   }
+  },
+  {
+   "name": "m30 keep act3 | pct 0 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 2760,
+    "k": 2760,
+    "p": 128,
+    "f": 72,
+    "c": 400,
+    "tdee": 2759,
+    "bmr": 1780
+   }
+  },
+  {
+   "name": "m30 keep act3 | pct 1 act 250",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 2450,
+    "k": 2700,
+    "p": 128,
+    "f": 72,
+    "c": 384,
+    "tdee": 2448,
+    "bmr": 1780
+   }
+  },
+  {
+   "name": "f28 lose act1 | pct .5 no act",
+   "prof": {
+    "sex": "f",
+    "age": 28,
+    "h": 165,
+    "w": 68,
+    "act": 1,
+    "goal": "lose"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 1650,
+    "k": 1650,
+    "p": 122,
+    "f": 61,
+    "c": 152,
+    "tdee": 1939,
+    "bmr": 1410
+   }
+  },
+  {
+   "name": "f28 lose act1 | pct .5 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 28,
+    "h": 165,
+    "w": 68,
+    "act": 1,
+    "goal": "lose"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 1650,
+    "k": 1800,
+    "p": 122,
+    "f": 61,
+    "c": 189,
+    "tdee": 1939,
+    "bmr": 1410
+   }
+  },
+  {
+   "name": "f28 lose act1 | pct 0 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 28,
+    "h": 165,
+    "w": 68,
+    "act": 1,
+    "goal": "lose"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 1650,
+    "k": 1650,
+    "p": 122,
+    "f": 61,
+    "c": 152,
+    "tdee": 1939,
+    "bmr": 1410
+   }
+  },
+  {
+   "name": "f28 lose act1 | pct 1 act 250",
+   "prof": {
+    "sex": "f",
+    "age": 28,
+    "h": 165,
+    "w": 68,
+    "act": 1,
+    "goal": "lose"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 1650,
+    "k": 1900,
+    "p": 122,
+    "f": 61,
+    "c": 214,
+    "tdee": 1939,
+    "bmr": 1410
+   }
+  },
+  {
+   "name": "m35 gain act5 | pct .5 no act",
+   "prof": {
+    "sex": "m",
+    "age": 35,
+    "h": 185,
+    "w": 78,
+    "act": 5,
+    "goal": "gain"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 2670,
+    "k": 2670,
+    "p": 156,
+    "f": 70,
+    "c": 354,
+    "tdee": 2429,
+    "bmr": 1766
+   }
+  },
+  {
+   "name": "m35 gain act5 | pct .5 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 35,
+    "h": 185,
+    "w": 78,
+    "act": 5,
+    "goal": "gain"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 2670,
+    "k": 2820,
+    "p": 156,
+    "f": 70,
+    "c": 391,
+    "tdee": 2429,
+    "bmr": 1766
+   }
+  },
+  {
+   "name": "m35 gain act5 | pct 0 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 35,
+    "h": 185,
+    "w": 78,
+    "act": 5,
+    "goal": "gain"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 3350,
+    "k": 3350,
+    "p": 156,
+    "f": 70,
+    "c": 524,
+    "tdee": 3047,
+    "bmr": 1766
+   }
+  },
+  {
+   "name": "m35 gain act5 | pct 1 act 250",
+   "prof": {
+    "sex": "m",
+    "age": 35,
+    "h": 185,
+    "w": 78,
+    "act": 5,
+    "goal": "gain"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 2670,
+    "k": 2920,
+    "p": 156,
+    "f": 70,
+    "c": 416,
+    "tdee": 2429,
+    "bmr": 1766
+   }
+  },
+  {
+   "name": "f40 recomp act3 | pct .5 no act",
+   "prof": {
+    "sex": "f",
+    "age": 40,
+    "h": 170,
+    "w": 72,
+    "act": 3,
+    "goal": "recomp"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 1760,
+    "k": 1760,
+    "p": 158,
+    "f": 58,
+    "c": 152,
+    "tdee": 1955,
+    "bmr": 1422
+   }
+  },
+  {
+   "name": "f40 recomp act3 | pct .5 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 40,
+    "h": 170,
+    "w": 72,
+    "act": 3,
+    "goal": "recomp"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 1760,
+    "k": 1910,
+    "p": 158,
+    "f": 58,
+    "c": 189,
+    "tdee": 1955,
+    "bmr": 1422
+   }
+  },
+  {
+   "name": "f40 recomp act3 | pct 0 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 40,
+    "h": 170,
+    "w": 72,
+    "act": 3,
+    "goal": "recomp"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 1980,
+    "k": 1980,
+    "p": 158,
+    "f": 58,
+    "c": 208,
+    "tdee": 2203,
+    "bmr": 1422
+   }
+  },
+  {
+   "name": "f40 recomp act3 | pct 1 act 250",
+   "prof": {
+    "sex": "f",
+    "age": 40,
+    "h": 170,
+    "w": 72,
+    "act": 3,
+    "goal": "recomp"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 1760,
+    "k": 2010,
+    "p": 158,
+    "f": 58,
+    "c": 214,
+    "tdee": 1955,
+    "bmr": 1422
+   }
+  },
+  {
+   "name": "m50 lose act0 | pct .5 no act",
+   "prof": {
+    "sex": "m",
+    "age": 50,
+    "h": 175,
+    "w": 95,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 1830,
+    "k": 1830,
+    "p": 171,
+    "f": 86,
+    "c": 95,
+    "tdee": 2159,
+    "bmr": 1799
+   }
+  },
+  {
+   "name": "m50 lose act0 | pct .5 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 50,
+    "h": 175,
+    "w": 95,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 1830,
+    "k": 1980,
+    "p": 171,
+    "f": 86,
+    "c": 133,
+    "tdee": 2159,
+    "bmr": 1799
+   }
+  },
+  {
+   "name": "m50 lose act0 | pct 0 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 50,
+    "h": 175,
+    "w": 95,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 1830,
+    "k": 1830,
+    "p": 171,
+    "f": 86,
+    "c": 95,
+    "tdee": 2159,
+    "bmr": 1799
+   }
+  },
+  {
+   "name": "m50 lose act0 | pct 1 act 250",
+   "prof": {
+    "sex": "m",
+    "age": 50,
+    "h": 175,
+    "w": 95,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 1830,
+    "k": 2080,
+    "p": 171,
+    "f": 86,
+    "c": 158,
+    "tdee": 2159,
+    "bmr": 1799
+   }
+  },
+  {
+   "name": "f22 keep act7 | pct .5 no act",
+   "prof": {
+    "sex": "f",
+    "age": 22,
+    "h": 160,
+    "w": 52,
+    "act": 7,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 1720,
+    "k": 1720,
+    "p": 83,
+    "f": 47,
+    "c": 241,
+    "tdee": 1717,
+    "bmr": 1249
+   }
+  },
+  {
+   "name": "f22 keep act7 | pct .5 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 22,
+    "h": 160,
+    "w": 52,
+    "act": 7,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 1720,
+    "k": 1870,
+    "p": 83,
+    "f": 47,
+    "c": 278,
+    "tdee": 1717,
+    "bmr": 1249
+   }
+  },
+  {
+   "name": "f22 keep act7 | pct 0 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 22,
+    "h": 160,
+    "w": 52,
+    "act": 7,
+    "goal": "keep"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 2370,
+    "k": 2370,
+    "p": 83,
+    "f": 47,
+    "c": 405,
+    "tdee": 2373,
+    "bmr": 1249
+   }
+  },
+  {
+   "name": "f22 keep act7 | pct 1 act 250",
+   "prof": {
+    "sex": "f",
+    "age": 22,
+    "h": 160,
+    "w": 52,
+    "act": 7,
+    "goal": "keep"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 1720,
+    "k": 1970,
+    "p": 83,
+    "f": 47,
+    "c": 303,
+    "tdee": 1717,
+    "bmr": 1249
+   }
+  },
+  {
+   "name": "f60 lose act0 floor | pct .5 no act",
+   "prof": {
+    "sex": "f",
+    "age": 60,
+    "h": 155,
+    "w": 50,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 1200,
+    "k": 1200,
+    "p": 90,
+    "f": 45,
+    "c": 109,
+    "tdee": 1209,
+    "bmr": 1008
+   }
+  },
+  {
+   "name": "f60 lose act0 floor | pct .5 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 60,
+    "h": 155,
+    "w": 50,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 1200,
+    "k": 1350,
+    "p": 90,
+    "f": 45,
+    "c": 146,
+    "tdee": 1209,
+    "bmr": 1008
+   }
+  },
+  {
+   "name": "f60 lose act0 floor | pct 0 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 60,
+    "h": 155,
+    "w": 50,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 1200,
+    "k": 1200,
+    "p": 90,
+    "f": 45,
+    "c": 109,
+    "tdee": 1209,
+    "bmr": 1008
+   }
+  },
+  {
+   "name": "f60 lose act0 floor | pct 1 act 250",
+   "prof": {
+    "sex": "f",
+    "age": 60,
+    "h": 155,
+    "w": 50,
+    "act": 0,
+    "goal": "lose"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 1200,
+    "k": 1450,
+    "p": 90,
+    "f": 45,
+    "c": 171,
+    "tdee": 1209,
+    "bmr": 1008
+   }
+  },
+  {
+   "name": "m25 gain act7 | pct .5 no act",
+   "prof": {
+    "sex": "m",
+    "age": 25,
+    "h": 190,
+    "w": 90,
+    "act": 7,
+    "goal": "gain"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 2980,
+    "k": 2980,
+    "p": 180,
+    "f": 81,
+    "c": 382,
+    "tdee": 2705,
+    "bmr": 1968
+   }
+  },
+  {
+   "name": "m25 gain act7 | pct .5 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 25,
+    "h": 190,
+    "w": 90,
+    "act": 7,
+    "goal": "gain"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 2980,
+    "k": 3130,
+    "p": 180,
+    "f": 81,
+    "c": 419,
+    "tdee": 2705,
+    "bmr": 1968
+   }
+  },
+  {
+   "name": "m25 gain act7 | pct 0 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 25,
+    "h": 190,
+    "w": 90,
+    "act": 7,
+    "goal": "gain"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 4110,
+    "k": 4110,
+    "p": 180,
+    "f": 81,
+    "c": 666,
+    "tdee": 3738,
+    "bmr": 1968
+   }
+  },
+  {
+   "name": "m25 gain act7 | pct 1 act 250",
+   "prof": {
+    "sex": "m",
+    "age": 25,
+    "h": 190,
+    "w": 90,
+    "act": 7,
+    "goal": "gain"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 2980,
+    "k": 3230,
+    "p": 180,
+    "f": 81,
+    "c": 444,
+    "tdee": 2705,
+    "bmr": 1968
+   }
+  },
+  {
+   "name": "m45 recomp act1 | pct .5 no act",
+   "prof": {
+    "sex": "m",
+    "age": 45,
+    "h": 178,
+    "w": 88,
+    "act": 1,
+    "goal": "recomp"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "bonus": 0,
+    "base": 2190,
+    "k": 2190,
+    "p": 194,
+    "f": 70,
+    "c": 196,
+    "tdee": 2437,
+    "bmr": 1773
+   }
+  },
+  {
+   "name": "m45 recomp act1 | pct .5 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 45,
+    "h": 178,
+    "w": 88,
+    "act": 1,
+    "goal": "recomp"
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 150,
+    "base": 2190,
+    "k": 2340,
+    "p": 194,
+    "f": 70,
+    "c": 234,
+    "tdee": 2437,
+    "bmr": 1773
+   }
+  },
+  {
+   "name": "m45 recomp act1 | pct 0 act 300",
+   "prof": {
+    "sex": "m",
+    "age": 45,
+    "h": 178,
+    "w": 88,
+    "act": 1,
+    "goal": "recomp"
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "bonus": 0,
+    "base": 2190,
+    "k": 2190,
+    "p": 194,
+    "f": 70,
+    "c": 196,
+    "tdee": 2437,
+    "bmr": 1773
+   }
+  },
+  {
+   "name": "m45 recomp act1 | pct 1 act 250",
+   "prof": {
+    "sex": "m",
+    "age": 45,
+    "h": 178,
+    "w": 88,
+    "act": 1,
+    "goal": "recomp"
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "bonus": 250,
+    "base": 2190,
+    "k": 2440,
+    "p": 194,
+    "f": 70,
+    "c": 259,
+    "tdee": 2437,
+    "bmr": 1773
+   }
+  },
+  {
+   "name": "f33 manual macro | pct .5 no act",
+   "prof": {
+    "sex": "f",
+    "age": 33,
+    "h": 168,
+    "w": 63,
+    "act": 3,
+    "goal": "lose",
+    "macro": {
+     "on": true,
+     "p": 120,
+     "f": 55,
+     "c": 150
+    }
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "expected": {
+    "manual": true,
+    "dayType": null,
+    "bonus": 0,
+    "base": 1580,
+    "k": 1580,
+    "p": 120,
+    "f": 55,
+    "c": 150,
+    "tdee": 1862,
+    "bmr": 1354
+   }
+  },
+  {
+   "name": "f33 manual macro | pct .5 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 33,
+    "h": 168,
+    "w": 63,
+    "act": 3,
+    "goal": "lose",
+    "macro": {
+     "on": true,
+     "p": 120,
+     "f": 55,
+     "c": 150
+    }
+   },
+   "pct": 0.5,
+   "actKcal": 300,
+   "expected": {
+    "manual": true,
+    "dayType": null,
+    "bonus": 150,
+    "base": 1580,
+    "k": 1730,
+    "p": 120,
+    "f": 55,
+    "c": 188,
+    "tdee": 1862,
+    "bmr": 1354
+   }
+  },
+  {
+   "name": "f33 manual macro | pct 0 act 300",
+   "prof": {
+    "sex": "f",
+    "age": 33,
+    "h": 168,
+    "w": 63,
+    "act": 3,
+    "goal": "lose",
+    "macro": {
+     "on": true,
+     "p": 120,
+     "f": 55,
+     "c": 150
+    }
+   },
+   "pct": 0,
+   "actKcal": 300,
+   "expected": {
+    "manual": true,
+    "dayType": null,
+    "bonus": 0,
+    "base": 1580,
+    "k": 1580,
+    "p": 120,
+    "f": 55,
+    "c": 150,
+    "tdee": 2099,
+    "bmr": 1354
+   }
+  },
+  {
+   "name": "f33 manual macro | pct 1 act 250",
+   "prof": {
+    "sex": "f",
+    "age": 33,
+    "h": 168,
+    "w": 63,
+    "act": 3,
+    "goal": "lose",
+    "macro": {
+     "on": true,
+     "p": 120,
+     "f": 55,
+     "c": 150
+    }
+   },
+   "pct": 1,
+   "actKcal": 250,
+   "expected": {
+    "manual": true,
+    "dayType": null,
+    "bonus": 250,
+    "base": 1580,
+    "k": 1830,
+    "p": 120,
+    "f": 55,
+    "c": 213,
+    "tdee": 1862,
+    "bmr": 1354
+   }
+  },
+  {
+   "name": "phase pct -20",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "phase": {
+    "type": "cut",
+    "mode": "pct",
+    "pct": -20
+   },
+   "expected": {
+    "bonus": 0,
+    "base": 1960,
+    "k": 1960,
+    "p": 128,
+    "f": 72,
+    "c": 200,
+    "tdee": 2448,
+    "bmr": 1780
+   }
+  },
+  {
+   "name": "phase abs 1900 prot 2.2",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "phase": {
+    "type": "cut",
+    "mode": "abs",
+    "kcal": 1900,
+    "prot": 2.2
+   },
+   "expected": {
+    "bonus": 0,
+    "base": 1900,
+    "k": 1900,
+    "p": 176,
+    "f": 72,
+    "c": 137,
+    "tdee": 2448,
+    "bmr": 1780
+   }
+  },
+  {
+   "name": "phase macro",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "phase": {
+    "type": "cut",
+    "mode": "macro",
+    "mp": 150,
+    "mf": 60,
+    "mc": 180
+   },
+   "expected": {
+    "manual": true,
+    "dayType": null,
+    "bonus": 0,
+    "base": 1860,
+    "k": 1860,
+    "p": 150,
+    "f": 60,
+    "c": 180,
+    "tdee": 2448,
+    "bmr": 1780
+   }
+  },
+  {
+   "name": "phase recomp pct 0",
+   "prof": {
+    "sex": "m",
+    "age": 30,
+    "h": 180,
+    "w": 80,
+    "act": 3,
+    "goal": "keep"
+   },
+   "pct": 0.5,
+   "actKcal": 0,
+   "phase": {
+    "type": "recomp",
+    "mode": "pct",
+    "pct": 0
+   },
+   "expected": {
+    "bonus": 0,
+    "base": 2450,
+    "k": 2450,
+    "p": 128,
+    "f": 64,
+    "c": 340,
+    "tdee": 2448,
+    "bmr": 1780
+   }
+  }
+ ],
+ "misc": {
+  "leanShare": [
+   [
+    0.8,
+    0.35
+   ],
+   [
+    1.6,
+    0.18999999999999995
+   ],
+   [
+    2.2,
+    0.1
+   ],
+   [
+    3,
+    0.1
+   ]
+  ],
+  "fatFromDeficit": [
+   [
+    500,
+    1.6,
+    52.5974025974026
+   ],
+   [
+    -300,
+    1.6,
+    -38.96103896103896
+   ],
+   [
+    770,
+    2.2,
+    90
+   ]
+  ]
+ }
+}

@@ -15,7 +15,7 @@ function ToggleGroup({
   return (
     <ToggleGroupPrimitive.Root
       data-slot="toggle-group"
-      className={cn(variant === 'segment' ? 'flex w-full gap-1 rounded-full bg-secondary p-1' : 'flex flex-wrap gap-2', className)}
+      className={cn('flex flex-wrap gap-1.5', className)}
       {...props}
     >
       <Ctx.Provider value={{ variant }}>{children}</Ctx.Provider>

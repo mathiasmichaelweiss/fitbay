@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Checkin, Meal, Measure, Profile } from '@fitbay/shared';
-import { target, sum, type Target } from '@fitbay/calc';
+import { target, sum, type CalcProfile, type MacroSum, type Target } from '@fitbay/calc';
 import { api, type Collection } from './api';
 
 export const today = () => {
@@ -41,9 +41,10 @@ export const useMealOps = () => useCol<Meal>('meals');
 export const useCheckinOps = () => useCol<Checkin>('checkins');
 export const useMeasureOps = () => useCol<Measure>('measures');
 
-/** Норма и съеденное за день. Все числа только из @fitbay/calc. */
-export function useDaySummary(date: string): { target: Target | null; eaten: ReturnType<typeof sum>; meals: Meal[] } {
+/** Норма и съеденное за день. Все числа только из @fitbay/calc. Активности и фазы плана подключаются в A3.3/A4.3. */
+export function useDaySummary(date: string): { target: Target | null; eaten: MacroSum; meals: Meal[] } {
   const { data: profile } = useProfile();
   const { data: meals = [] } = useMeals(date);
-  return { target: profile ? target(profile, date) : null, eaten: sum(meals), meals };
+  return { target: profile ? target(profile as CalcProfile, date) : null, eaten: sum(meals), meals };
 }
+export const useCheckins = () => useQuery({ queryKey: ['checkins'], queryFn: () => api.list<Checkin>('checkins') });

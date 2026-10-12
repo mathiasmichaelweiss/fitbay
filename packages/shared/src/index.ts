@@ -13,6 +13,7 @@ export interface Consent {
   at: string; // ISO
 }
 
+/** Профиль (settings.profile прототипа). act: тренировок в неделю 0|1|3|5|7. */
 export interface Profile {
   id?: string;
   name?: string;
@@ -21,10 +22,17 @@ export interface Profile {
   h: number;
   w: number;
   tw?: number; // целевой вес
-  act: 'low' | 'light' | 'mid' | 'high';
-  goal: 'lose' | 'keep' | 'gain';
+  act: 0 | 1 | 3 | 5 | 7;
+  goal: 'lose' | 'recomp' | 'keep' | 'gain';
   lang?: Lang;
+  /** Путь из онбординга: сам с ИИ, найти тренера, код тренера. */
+  path?: 'ai' | 'trainer' | 'code';
+  trainerCode?: string;
+  macro?: { on?: boolean; p: number; f: number; c: number };
+  flex?: { on?: boolean; days: number[]; train: { p: number; f: number; c: number }; rest: { p: number; f: number; c: number } };
+  dayOv?: Record<string, 'train' | 'rest'>;
   consents: Partial<Record<ConsentKind, Consent>>;
+  onboarded?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -32,29 +40,32 @@ export interface Profile {
 export type Slot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export const SLOTS: Slot[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
+/** Приём пищи. Поля как в прототипе (kcal, protein, fat, carbs), чтобы миграция (спека 5.4) шла без преобразований. */
 export interface Meal {
   id: string;
   date: string;
-  slot: Slot;
+  /** Необязателен: без него слот определяется groupMeals по времени и калорийности. */
+  slot?: Slot;
   name: string;
   kcal: number;
-  p: number;
-  f: number;
-  c: number;
+  protein: number;
+  fat: number;
+  carbs: number;
   grams?: number;
+  thumb?: string;
   createdAt?: string;
 }
 
-/** Чек-ин: шкалы 1..5 (5 = лучше; для стресса, голода и боли 5 = сильнее). */
+/** Чек-ин (CI_M прототипа): каждый пункт 1..5, 5 = хорошо. Достаточно отметить один пункт. */
 export interface Checkin {
   id: string;
   date: string;
-  sleep: number;
-  energy: number;
-  stress: number;
-  hunger: number;
-  pain: number;
-  adh: number;
+  sleep?: number;
+  energy?: number;
+  stress?: number;
+  hunger?: number;
+  pain?: number;
+  adh?: number;
   note?: string;
 }
 

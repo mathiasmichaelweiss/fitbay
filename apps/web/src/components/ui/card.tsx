@@ -2,7 +2,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="card" className={cn('flex flex-col gap-4 rounded-xl border bg-card p-4 text-card-foreground', className)} {...props} />;
+  return <div data-slot="card" className={cn('flex min-w-0 flex-col gap-3 rounded-xl bg-card p-4 text-card-foreground', className)} {...props} />;
 }
 function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return <div data-slot="card-header" className={cn('flex items-center gap-2', className)} {...props} />;

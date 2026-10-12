@@ -14,8 +14,7 @@ for (const path of ['/', '/ui']) {
 
 test('онбординг без нативных контролов', async ({ page }) => {
   await page.goto('/');
-  await page.getByText('обработку моих данных о здоровье').click();
-  await page.getByText('политику конфиденциальности').click();
+  await page.getByRole('button', { name: 'Начать' }).click();
   await page.getByRole('button', { name: 'Дальше' }).click();
   await page.getByRole('button', { name: 'Дата рождения' }).click();
   expect(await page.locator('select, input[type=date]').count()).toBe(0);

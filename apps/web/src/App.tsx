@@ -33,6 +33,7 @@ export function App() {
   if (isShowcase(loc)) return <Showcase />;
   if (isLoading) return null;
   // Без профиля или без обязательных согласий приложение не открываем (DSGVO, спека 7).
-  if (!profile || !profile.consents?.health || !profile.consents?.privacy) return <Onboarding initial={profile} />;
+  // Как в прототипе: без профиля или без согласия на данные о здоровье (ст. 9 DSGVO) открывается онбординг.
+  if (!profile || !profile.consents?.health) return <Onboarding initial={profile} />;
   return <Shell />;
 }

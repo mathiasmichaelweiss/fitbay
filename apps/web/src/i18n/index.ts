@@ -1,8 +1,15 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import type { Lang } from '@fitbay/shared';
-import { ru } from './ru';
-import { de } from './de';
+import protoDe from './proto-de.json';
+import { extraDe } from './extra-de';
+
+/**
+ * i18n по схеме прототипа: ключ = русский текст (как T("...") в kalorii.html),
+ * немецкий берётся из словаря DE прототипа (proto-de.json, 1244 строки) и extra-de.ts.
+ * Для ru ресурсов нет: i18next возвращает сам ключ.
+ */
+export const DE: Record<string, string> = { ...(protoDe as Record<string, string>), ...extraDe };
 
 const KEY = 'fitbay.lang';
 const stored = (() => {
@@ -14,9 +21,12 @@ const stored = (() => {
 })();
 
 void i18n.use(initReactI18next).init({
-  resources: { ru: { translation: ru }, de: { translation: de } },
+  resources: { de: { translation: DE }, ru: { translation: {} } },
   lng: stored ?? 'ru',
-  fallbackLng: 'ru',
+  fallbackLng: false,
+  keySeparator: false,
+  nsSeparator: false,
+  returnEmptyString: false,
   interpolation: { escapeValue: false },
 });
 

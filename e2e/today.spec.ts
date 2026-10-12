@@ -3,42 +3,51 @@ import { seed } from './helpers';
 
 test.beforeEach(({ page }) => seed(page));
 
-test('еда: добавить вручную, кольцо пересчитывается, удалить', async ({ page }) => {
+test('плитки как в прототипе: калории, белок, добавить еду', async ({ page }) => {
   await page.goto('/');
-  const left = page.getByTestId('kcal-left');
-  const before = Number(await left.textContent());
-  expect(before).toBeGreaterThan(1000);
+  await expect(page.getByTestId('kcal-eaten')).toHaveText('0');
+  await expect(page.getByTestId('kcal-target')).toHaveText(/^2\s?450$/);
+  await expect(page.getByText('КРУГИ ПИТАНИЯ')).toBeVisible();
+  await expect(page.getByTestId('coach')).toHaveText('День чистый. Начни с белкового завтрака, так проще закрыть средний круг.');
+});
 
-  await page.getByRole('button', { name: 'Добавить: Обед' }).click();
+test('еда: добавить вручную, цифры и коуч пересчитываются, удалить', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('add-food').click();
   const sheet = page.getByRole('dialog');
   await expect(sheet.getByRole('button', { name: 'Сохранить' })).toBeDisabled();
   await sheet.getByLabel('Название').fill('Гречка с курицей');
-  await sheet.getByLabel('Вес, г').fill('350');
-  await sheet.getByLabel('Калории').fill('520');
-  await sheet.getByLabel('Белки, г').fill('42');
+  await sheet.getByLabel('ккал').fill('520');
+  await sheet.getByLabel('белки').fill('42');
   await sheet.getByRole('button', { name: 'Сохранить' }).click();
 
   await expect(sheet).toBeHidden();
   await expect(page.getByText('Гречка с курицей')).toBeVisible();
-  await expect(left).toHaveText(String(before - 520));
+  await expect(page.getByTestId('kcal-eaten')).toHaveText('520');
+  await expect(page.getByText('ЗАВТРАК ·', { exact: false })).toBeVisible(); // первый приём дня = завтрак (groupMeals)
+  await expect(page.getByTestId('coach')).toHaveText('86г белка до цели. Осталось 1930 ккал, этого хватит.');
 
   await page.reload();
-  await expect(page.getByText('Гречка с курицей')).toBeVisible();
   await page.getByRole('button', { name: 'Удалить: Гречка с курицей' }).click();
-  await expect(left).toHaveText(String(before));
+  await expect(page.getByTestId('kcal-eaten')).toHaveText('0');
 });
 
-test('чек-ин: все шкалы обязательны, после сохранения видно сводку', async ({ page }) => {
+test('чек-ин: быстрый смайлик заполняет все пункты, плитка показывает итог', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Отметить самочувствие' }).click();
+  await page.getByTestId('ci-tile').getByRole('button', { name: '4 / 5' }).click();
   const sheet = page.getByRole('dialog');
-  const save = sheet.getByRole('button', { name: 'Сохранить' });
-  for (const k of ['Сон', 'Энергия', 'Стресс', 'Голод', 'Боль']) await sheet.getByRole('group', { name: k }).getByRole('radio', { name: '4' }).click();
-  await expect(save).toBeDisabled();
-  await sheet.getByRole('group', { name: 'Соблюдение плана' }).getByRole('radio', { name: '5' }).click();
-  await save.click();
-  await expect(page.getByText('Соблюдение плана 5')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Изменить' })).toBeVisible();
+  await expect(sheet.getByRole('radiogroup', { name: 'Сон' }).getByRole('radio', { name: 'Хорошо' })).toHaveAttribute('aria-checked', 'true');
+  await sheet.getByRole('radiogroup', { name: 'Стресс' }).getByRole('radio', { name: 'Нет' }).click();
+  await sheet.getByRole('button', { name: 'Сохранить' }).click();
+  await expect(page.getByText('САМОЧУВСТВИЕ СЕГОДНЯ')).toBeVisible();
+  await expect(page.getByTestId('ci-tile')).toContainText('4,2 из 5');
+});
+
+test('чек-ин: пустой нельзя сохранить', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('ci-tile').getByText('Как ты сегодня?').click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Сохранить' }).click();
+  await expect(page.getByText('Отметь хотя бы один пункт.')).toBeVisible();
 });
 
 test('вес: запись за сегодня обновляется, а не дублируется', async ({ page }) => {
@@ -50,11 +59,21 @@ test('вес: запись за сегодня обновляется, а не �
   await input.fill('79,1');
   await page.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.getByTestId('row')).toHaveCount(1);
-  await expect(page.locator('[data-slot=tile]').filter({ hasText: 'Сейчас' })).toContainText('79,1');
-  await expect(page.locator('[data-slot=tile]').filter({ hasText: 'Изменение' })).toContainText('0');
+  await expect(page.getByTestId('w-current')).toContainText('79,1');
+  await expect(page.getByTestId('w-change')).toContainText('0');
 });
 
-test('экран «Сегодня» без горизонтального скролла на 360 px', async ({ page }) => {
+test('прошлый день: добавить еду нельзя, коуч и плитки работают', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('title').click();
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  await page.getByRole('dialog').getByRole('button', { name: new RegExp(`^[^,]+, ${d.getDate()} `) }).first().click();
+  await expect(page.getByTestId('add-food')).toBeDisabled();
+  await expect(page.getByTestId('add-food')).toContainText('День закрыт');
+});
+
+test('экран без горизонтального скролла на 360 px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);

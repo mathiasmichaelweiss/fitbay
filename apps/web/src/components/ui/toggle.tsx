@@ -8,10 +8,11 @@ const toggleVariants = cva(
   {
     variants: {
       variant: {
-        // сегмент внутри серой капсулы: активный оранжевый
-        segment: 'h-9 flex-1 text-muted-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
-        // чип: активный бирюзовый контур; зона касания расширена до 44 px
-        chip: "h-8 border px-3 font-medium text-foreground data-[state=on]:border-brand-teal data-[state=on]:bg-brand-teal/12 data-[state=on]:text-brand-teal after:absolute after:-inset-y-1.5 after:inset-x-0 after:content-['']",
+        // .seg прототипа: серые пилюли, активная оранжевая с тёмным текстом; зона касания до 44 px
+        segment:
+          "h-9 bg-secondary px-[13px] text-[15px] font-normal text-foreground data-[state=on]:bg-primary data-[state=on]:font-semibold data-[state=on]:text-on-color after:absolute after:-inset-y-1 after:inset-x-0 after:content-['']",
+        // .chipF прототипа: тёмные пилюли, активная кремовая
+        chip: "h-9 bg-card px-3.5 text-sm font-normal text-foreground data-[state=on]:bg-brand-cream data-[state=on]:font-semibold data-[state=on]:text-on-color after:absolute after:-inset-y-1 after:inset-x-0 after:content-['']",
       },
     },
     defaultVariants: { variant: 'segment' },

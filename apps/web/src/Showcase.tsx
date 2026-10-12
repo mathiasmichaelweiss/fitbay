@@ -11,14 +11,15 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } f
 import { Field, FieldGroup } from '@/components/ui/field';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
-import { MacroBar, Ring } from '@/components/ui/ring';
+import { CapsRings, RC } from '@/components/ui/rings';
+import { OptionCard } from '@/components/ui/option-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tile, Tiles } from '@/components/ui/tile';
 import { SingleToggle, ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ru } from 'date-fns/locale';
 
-const COLORS = ['orange', 'yellow', 'teal', 'red', 'surface', 'surface-2', 'line', 'muted'];
+const COLORS = ['orange', 'yellow', 'teal', 'cream', 'peach', 'green', 'red', 'ok', 'surface', 'surface-2', 'line', 'muted'];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -37,6 +38,7 @@ export function Showcase() {
   const [cal, setCal] = useState<Date | undefined>(new Date());
   const [act, setAct] = useState('mid');
   const [ok, setOk] = useState(true);
+  const [opt, setOpt] = useState('a');
 
   return (
     <main className="mx-auto grid max-w-[480px] gap-4 px-4 py-6">
@@ -70,21 +72,30 @@ export function Showcase() {
         </div>
       </Section>
 
-      <Section title="Tile, Ring, Progress">
+      <Section title="Tile (плитки прототипа)">
         <Tiles>
-          <Tile label="Калории" value="1 420" tone="orange" />
-          <Tile label="Белок" value="96 г" tone="teal" />
+          <Tile color="orange" full chevron label="Калории за день" value="1 420" sub="из 2 450" />
+          <Tile color="cream" label="Белок" small value="96г" sub="из 128г" />
+          <Tile color="yellow" dot title="Добавить еду" sub="Фото, посуда, описание" onClick={() => undefined} />
+          <Tile color="teal" label="От тренера" title="Пей больше воды" />
+          <Tile color="peach" label="Тренеры" title="Найти тренера" />
+          <Tile color="green" label="План" title="Сушка, неделя 3" />
+          <Tile color="dark" label="Студии рядом" title="Найти зал" />
         </Tiles>
+      </Section>
+
+      <Section title="CapsRings (круги питания)">
         <div className="flex items-center gap-4">
-          <Ring value={0.62} size={120} stroke={10}>
-            <span className="text-xl font-bold">62%</span>
-          </Ring>
-          <div className="grid flex-1 gap-3">
-            <MacroBar label="Белки" eaten={96} goal={144} color="teal" unit="г" />
-            <MacroBar label="Жиры" eaten={80} goal={72} color="yellow" unit="г" />
-          </div>
+          <CapsRings size={132} items={[{ v: 1420, g: 2450, c: RC.k }, { v: 96, g: 128, c: RC.p }, { v: 150, g: 300, c: RC.c }, { v: 40, g: 72, c: RC.f }]} />
+          <Progress value={40} />
         </div>
-        <Progress value={40} />
+      </Section>
+
+      <Section title="OptionCard (онбординг)">
+        <div role="radiogroup" className="grid gap-2.5">
+          <OptionCard icon="🔥" iconBg="rgba(255,90,10,.18)" title="Похудеть" sub="Мягкий дефицит, больше белка" selected={opt === 'a'} onClick={() => setOpt('a')} />
+          <OptionCard icon="🌿" iconBg="#222" title="Держать форму" sub="Есть по норме без дефицита" selected={opt === 'b'} onClick={() => setOpt('b')} />
+        </div>
       </Section>
 
       <Section title="ToggleGroup: сегмент и чипы">

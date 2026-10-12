@@ -7,33 +7,35 @@
  * Тема только тёмная, как в прототипе.
  */
 :root {
+  /* Палитра прототипа (kalorii.html, :root) */
   --orange: #ff5a0a;
   --yellow: #f2b705;
-  --teal: #5bc0be;
-  --red: #ff4d5e;
+  --teal: #afd9da;
+  --cream: #f4efe6;
+  --peach: #ffc9b5;
+  --green: #0b4a2e;
+  --red: #e5484d;
+  --ok: #7bc67b;
+  /* цвета колец прототипа (RC) */
+  --ring-k: #ff5a0a;
+  --ring-p: #f4efe6;
+  --ring-c: #f2b705;
+  --ring-f: #b2d8d8;
 
-  --bg: #0f1115;
-  --surface: #181b21;
-  --surface-2: #22262e;
-  --line: #2c313a;
-  --fg: #f4f4f5;
-  --muted: #9aa0aa;
+  --bg: #000000;
+  --surface: #161616; /* --tile */
+  --surface-2: #222222; /* поля и сегменты */
+  --surface-3: #262626;
+  --line: #2a2a2a;
+  --fg: #ffffff;
+  --muted: #9a9a9a;
+  --on-color: #111111; /* текст на цветных плитках */
 
   --font: 'Onest', system-ui, -apple-system, sans-serif;
-  --fs-xs: 12px;
-  --fs-sm: 14px;
-  --fs-md: 16px;
-  --fs-lg: 20px;
-  --fs-xl: 28px;
-  --sp-1: 4px;
-  --sp-2: 8px;
-  --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-5: 24px;
   --tap: 44px;
 
   /* shadcn */
-  --radius: 1rem;
+  --radius: 24px; /* плитки и карточки */
   --background: var(--bg);
   --foreground: var(--fg);
   --card: var(--surface);
@@ -41,11 +43,11 @@
   --popover: var(--surface);
   --popover-foreground: var(--fg);
   --primary: var(--orange);
-  --primary-foreground: #ffffff;
+  --primary-foreground: var(--on-color);
   --secondary: var(--surface-2);
   --secondary-foreground: var(--fg);
   --muted-foreground: var(--muted);
-  --accent: #2a2f38;
+  --accent: var(--surface-3);
   --accent-foreground: var(--fg);
   --destructive: var(--red);
   --border: var(--line);
@@ -80,10 +82,17 @@
   --color-brand-red: var(--red);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
-  --radius-sm: calc(var(--radius) - 6px);
-  --radius-md: calc(var(--radius) - 4px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
+  --color-surface-3: var(--surface-3);
+  --color-brand-cream: var(--cream);
+  --color-brand-peach: var(--peach);
+  --color-brand-green: var(--green);
+  --color-brand-ok: var(--ok);
+  --color-on-color: var(--on-color);
+  --radius-sm: 12px;
+  --radius-md: 14px; /* поля ввода */
+  --radius-lg: 16px; /* основная кнопка */
+  --radius-xl: 24px; /* плитки, карточки */
+  --radius-2xl: 28px;
 }
 
 @layer base {
