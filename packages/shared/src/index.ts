@@ -168,4 +168,6 @@ export interface ActiveWorkout {
   noteOpen?: boolean;
   /** редактирование тренировки из истории */
   editId?: string;
+  /** тренер ведет тренировку клиента (forClient прототипа) */
+  forClient?: { id: string; name: string; slot?: string };
 }

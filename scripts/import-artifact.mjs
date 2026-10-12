@@ -36,8 +36,7 @@ for (const d of docs) {
     case 'activity': add(`ACT#${d.date}#${d.id}`, d, d.at); break;
     case 'wcorr': add('WCORR', d, Date.now()); break;
     case 'woactive':
-      // тренировка тренера с тестовым клиентом из прототипа не переносится
-      if (!d.none && !d.forClient) add('WOACTIVE', d, d.start);
+      if (!d.none) add('WOACTIVE', d, d.start);
       else skipped.woactive = (skipped.woactive ?? 0) + 1;
       break;
     default: skipped[d.type] = (skipped[d.type] ?? 0) + 1;

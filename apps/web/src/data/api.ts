@@ -111,7 +111,8 @@ export const devUser = {
     try {
       return JSON.parse(localStorage.getItem('fitbay.devUser') ?? '') as { uid: string; roles: string };
     } catch {
-      return { uid: 'local', roles: 'client' };
+      // локально по умолчанию владелец: все роли, как isOwner в прототипе
+      return { uid: 'local', roles: 'client,trainer,admin' };
     }
   },
   set(u: { uid: string; roles: string }) {

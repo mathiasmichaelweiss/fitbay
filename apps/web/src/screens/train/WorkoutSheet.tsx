@@ -159,7 +159,7 @@ export function WorkoutSheet() {
       title={<Input value={a.title} aria-label={t('Название тренировки')} onChange={(e) => edit((x) => ({ ...x, title: e.target.value }))} className="h-auto border-0 bg-transparent p-0 text-[1.2rem] font-bold" />}
     >
       <div className="-mt-1.5 mb-3 text-[0.85rem] opacity-60" data-testid="wo-time">
-        ⏱{' '}
+        ⏱ {a.forClient ? `🤝 ${a.forClient.name} · ` : ''}
         {isEdit
           ? `${format(a.start, 'EEE, d MMMM', { locale })} · ${mins(a.start, a.end ?? a.start)} ${t('мин')} · ${t('редактирование')}`
           : `${mins(a.start, Date.now())} ${t('мин')}`}
@@ -300,11 +300,14 @@ export function WoBar() {
         className="flex w-full items-center gap-3 rounded-[18px] border-[1.5px] border-brand-orange bg-[linear-gradient(90deg,#2a1608,#1c1c1c_70%)] px-3 py-2.5 text-left text-white"
       >
         <span className="relative grid size-9 flex-none place-items-center rounded-full bg-brand-orange text-[1.1rem]">
-          🏋️
+          {a.forClient ? '🤝' : '🏋️'}
           <span aria-hidden className="absolute -inset-1 animate-ping rounded-full border-2 border-brand-orange opacity-50 motion-reduce:animate-none" />
         </span>
         <span className="min-w-0 flex-1">
-          <b className="block truncate text-[0.92rem]">{a.title || t('Тренировка')}</b>
+          <b className="block truncate text-[0.92rem]">
+            {a.forClient ? `${a.forClient.name} · ` : ''}
+            {a.title || t('Тренировка')}
+          </b>
           <small className="mt-px block text-[0.74rem] text-muted-foreground">
             <span className="text-brand-orange">●</span> {t('идёт')} <span className="tabular-nums">{m}</span> · {d}/{n} {t('подходов')}
           </small>

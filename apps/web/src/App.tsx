@@ -1,3 +1,4 @@
+import { devUser } from '@/data/api';
 import { ConfirmHost } from '@/components/ui/confirm';
 import { useEffect, useState } from 'react';
 import { Showcase } from './Showcase';
@@ -30,7 +31,7 @@ export function App() {
   const setTrainer = useNav((s) => s.setTrainer);
   const again = useNav((s) => s.onboarding);
   // До Auth0: #/trainer включает роль тренера для проверки «Я / Кабинет».
-  useEffect(() => setTrainer(loc.endsWith('#/trainer')), [loc, setTrainer]);
+  useEffect(() => setTrainer(loc.endsWith('#/trainer') || /trainer|admin/.test(devUser.get().roles)), [loc, setTrainer]);
   const { data: profile, isLoading } = useProfile();
   if (isShowcase(loc))
     return (
