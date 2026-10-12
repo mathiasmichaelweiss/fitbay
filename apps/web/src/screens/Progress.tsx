@@ -53,7 +53,12 @@ export function Progress() {
         <Button
           className="w-full"
           disabled={!valid || update.isPending}
-          onClick={() => update.mutate({ id: today(), date: today(), weight: Math.round(n * 10) / 10 }, { onSuccess: () => setInput('') })}
+          onClick={() => {
+            // поле очищаем сразу: иначе ответ сервера сотрёт уже введённое следующее значение
+            const typed = input;
+            setInput('');
+            update.mutate({ id: today(), date: today(), weight: Math.round(n * 10) / 10 }, { onError: () => setInput(typed) });
+          }}
         >
           {t('Сохранить')}
         </Button>

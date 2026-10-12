@@ -1,4 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
+import { API, asNewUser } from './helpers';
+
+let uid = '';
+test.beforeEach(async ({ page }) => {
+  uid = await asNewUser(page);
+});
 
 async function pickBirth(page: Page, year: string, monthRe: RegExp, dayLabel: RegExp) {
   await page.getByRole('button', { name: 'Дата рождения' }).click();
@@ -46,7 +52,8 @@ test('онбординг как в прототипе: 5 шагов, норма 
 
   await expect(page.getByTestId('title')).toHaveText('Сегодня');
   await page.reload();
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('fitbay.local.v1')!).single.profile);
+  // профиль сохранён на сервере (локальный API), а не в браузере
+  const saved = await (await page.request.get(`${API}/me/profile`, { headers: { 'x-dev-user': uid } })).json();
   expect(saved).toMatchObject({ birth: '1996-01-15', h: 180, w: 80, tw: 80, act: 3, goal: 'keep', path: 'ai' });
   expect(saved.consents.health.v).toBe(1);
 });

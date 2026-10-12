@@ -6,7 +6,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "pnpm --filter @fitbay/web dev",
+    "dev": "pnpm --parallel --filter @fitbay/api --filter @fitbay/web dev",
     "dev:backoffice": "pnpm --filter @fitbay/backoffice dev",
     "build": "pnpm -r build",
     "test": "vitest run",
@@ -14,7 +14,9 @@
     "test:e2e": "playwright test",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "dev:web": "pnpm --filter @fitbay/web dev",
+    "dev:api": "pnpm --filter @fitbay/api dev"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",

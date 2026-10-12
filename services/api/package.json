@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "tsx watch src/local/server.ts",
+    "start": "tsx src/local/server.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -15,6 +17,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
-    "@types/node": "^20.16.0"
+    "@types/node": "^20.16.0",
+    "tsx": "^4.19.0"
   }
 }

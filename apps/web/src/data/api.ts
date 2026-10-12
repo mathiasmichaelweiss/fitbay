@@ -90,13 +90,44 @@ export const localApi: Api = {
   },
 };
 
-/** HTTP-режим: те же операции поверх /me/... (токен Auth0 подставляется в A2.2). */
-export function httpApi(base: string, token: () => Promise<string | null> = async () => null): Api {
+/**
+ * Кто я для локального API без Auth0 (заголовки x-dev-user, x-dev-roles).
+ * Хранится в localStorage, переключается тестовыми пользователями (A6.1).
+ */
+export const devUser = {
+  get(): { uid: string; roles: string } {
+    try {
+      return JSON.parse(localStorage.getItem('fitbay.devUser') ?? '') as { uid: string; roles: string };
+    } catch {
+      return { uid: 'local', roles: 'client' };
+    }
+  },
+  set(u: { uid: string; roles: string }) {
+    try {
+      localStorage.setItem('fitbay.devUser', JSON.stringify(u));
+    } catch {
+      /* приватный режим */
+    }
+  },
+};
+
+/**
+ * Откуда брать токен. Сейчас null (вход заглушкой). В A2.2 сюда подставится getAccessTokenSilently из Auth0 SDK,
+ * и заголовки dev-пользователя перестанут отправляться.
+ */
+export const auth = { token: async (): Promise<string | null> => null };
+
+/** HTTP-режим: те же операции поверх /me/... */
+export function httpApi(base: string, token: () => Promise<string | null> = auth.token): Api {
   const req = async <T>(method: string, path: string, body?: unknown): Promise<T> => {
     const t = await token();
+    const who = devUser.get();
     const r = await fetch(`${base}${path}`, {
       method,
-      headers: { 'content-type': 'application/json', ...(t ? { authorization: `Bearer ${t}` } : {}) },
+      headers: {
+        'content-type': 'application/json',
+        ...(t ? { authorization: `Bearer ${t}` } : { 'x-dev-user': who.uid, 'x-dev-roles': who.roles }),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     if (r.status === 404 && method === 'GET') return null as T;

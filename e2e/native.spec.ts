@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seed } from './helpers';
+import { asNewUser, seed } from './helpers';
 
 /** Требование: никаких нативных select, date-инпутов и диалогов браузера, всё в стиле приложения. */
 for (const path of ['/', '/ui']) {
@@ -13,6 +13,7 @@ for (const path of ['/', '/ui']) {
 }
 
 test('онбординг без нативных контролов', async ({ page }) => {
+  await asNewUser(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Начать' }).click();
   await page.getByRole('button', { name: 'Дальше' }).click();

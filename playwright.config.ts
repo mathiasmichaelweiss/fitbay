@@ -4,5 +4,9 @@ export default defineConfig({
   testDir: './e2e',
   use: { baseURL: 'http://localhost:5173' },
   projects: [{ name: 'mobile', use: { ...devices['Pixel 7'] } }],
-  webServer: { command: 'pnpm dev', port: 5173, reuseExistingServer: true },
+  // API с отдельной базой для тестов + web, который ходит в этот API
+  webServer: [
+    { command: 'pnpm --filter @fitbay/api start', port: 8787, reuseExistingServer: true, env: { DB_FILE: '.data/e2e.json' } },
+    { command: 'pnpm dev:web', port: 5173, reuseExistingServer: true },
+  ],
 });
