@@ -88,6 +88,8 @@ export class FitBayBetaStack extends Stack {
     main.grantReadWriteData(trainerFn);
     const corrFn = fn('CorrectionsFn', 'api-corrections', 'corrections/handler.ts');
     main.grantReadWriteData(corrFn);
+    const adminFn = fn('AdminFn', 'api-admin', 'admin/handler.ts');
+    main.grantReadWriteData(adminFn);
     sharedFood.grantReadWriteData(corrFn);
     // A2.5: ИИ-прокси. Ключ OpenAI в код не попадает: при деплое задать OPENAI_API_KEY (позже Secrets Manager).
     const aiFn = new NodejsFunction(this, 'AiFn', {
@@ -101,11 +103,11 @@ export class FitBayBetaStack extends Stack {
       bundling: { minify: true, sourceMap: true },
     });
     main.grantReadWriteData(aiFn);
-    sharedFood.grantReadData(aiFn);
+    sharedFood.grantReadWriteData(aiFn); // общий кэш переводов упражнений
 
     const api = new HttpApi(this, 'Api', {
       apiName: `${prefix}-api`,
-      corsPreflight: { allowOrigins: origins, allowMethods: [CorsHttpMethod.ANY], allowHeaders: ['authorization', 'content-type'] },
+      corsPreflight: { allowOrigins: origins, allowMethods: [CorsHttpMethod.ANY], allowHeaders: ['authorization', 'content-type', 'x-act-as', 'x-act-roles'] },
     });
     const integrations = {
       health: new HttpLambdaIntegration('HealthInt', health),
@@ -113,6 +115,7 @@ export class FitBayBetaStack extends Stack {
       trainer: new HttpLambdaIntegration('TrainerInt', trainerFn),
       corrections: new HttpLambdaIntegration('CorrectionsInt', corrFn),
       ai: new HttpLambdaIntegration('AiInt', aiFn),
+      admin: new HttpLambdaIntegration('AdminInt', adminFn),
     } as const;
     for (const r of ROUTES) {
       const integration = integrations[r.handler as keyof typeof integrations];

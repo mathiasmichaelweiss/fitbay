@@ -9,6 +9,7 @@ import { makeHandler as makeUser } from '../user/handler';
 import { handler as health } from '../health';
 import { makeHandler as makeTrainer } from '../trainer/handler';
 import { makeHandler as makeCorrections } from '../corrections/handler';
+import { makeHandler as makeAdmin } from '../admin/handler';
 import { MemoryRepo } from '../lib/repo';
 import { makeHandler as makeAi, providerFromEnv } from '../ai/handler';
 import type { Provider } from '../ai/provider';
@@ -24,6 +25,7 @@ export function createServer(repo: Repo, opts: { shared?: Repo; ai?: Provider | 
     user: makeUser(repo),
     trainer: makeTrainer(repo, opts.now),
     corrections: makeCorrections(repo, shared, opts.now),
+    admin: makeAdmin(repo, opts.now),
     ai: makeAi(repo, shared, opts.ai === undefined ? providerFromEnv() : opts.ai, opts.now),
   };
   const auth = opts.auth ?? makeLocalAuth();
@@ -33,7 +35,7 @@ export function createServer(repo: Repo, opts: { shared?: Repo; ai?: Provider | 
     const origin = String(req.headers.origin ?? '');
     if (origins.includes(origin)) {
       res.setHeader('access-control-allow-origin', origin);
-      res.setHeader('access-control-allow-headers', 'authorization,content-type,x-dev-user,x-dev-roles');
+      res.setHeader('access-control-allow-headers', 'authorization,content-type,x-dev-user,x-dev-roles,x-act-as,x-act-roles');
       res.setHeader('access-control-allow-methods', 'GET,POST,PUT,DELETE,OPTIONS');
       res.setHeader('vary', 'origin');
     }

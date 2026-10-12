@@ -6,7 +6,7 @@ export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export interface Route {
   method: Method;
   path: string;
-  handler: 'health' | 'user' | 'trainer' | 'corrections' | 'ai';
+  handler: 'health' | 'user' | 'trainer' | 'corrections' | 'ai' | 'admin';
   auth?: boolean;
 }
 
@@ -29,7 +29,7 @@ export const ROUTES: Route[] = [
   ...many(['/trainer/clients', '/trainer/requests', '/trainer/overview'], ['GET'], 'trainer'),
   ...many(['/trainer/slots'], ['GET', 'POST'], 'trainer'),
   { method: 'DELETE', path: '/trainer/slots/{id}', handler: 'trainer' },
-  ...many(['/trainer/slots/{id}/cancel', '/trainer/slots/{id}/note', '/trainer/requests/{id}/answer', '/trainer/requests/{id}/adjust'], ['POST'], 'trainer'),
+  ...many(['/trainer/slots/{id}/cancel', '/trainer/slots/{id}/note', '/trainer/slots/{id}/plan', '/trainer/slots/{id}/live', '/trainer/slots/{id}/session', '/trainer/requests/{id}/answer', '/trainer/requests/{id}/adjust'], ['POST'], 'trainer'),
   // A2.4: клиент и тренер
   ...many(['/trainers', '/trainers/by-code/{code}', '/trainers/{tid}', '/trainers/{tid}/slots'], ['GET'], 'trainer'),
   ...many(['/trainers/{tid}/slots/{id}/book', '/trainers/{tid}/slots/{id}/cancel', '/trainers/{tid}/requests'], ['POST'], 'trainer'),
@@ -39,6 +39,9 @@ export const ROUTES: Route[] = [
   { method: 'POST', path: '/me/notifications/read', handler: 'trainer' },
   // A2.6: поправка веса при сохранении блюда
   { method: 'POST', path: '/me/corrections', handler: 'corrections' },
+  // A6.1: тестовые пользователи владельца
+  ...many(['/admin/testusers'], ['GET', 'POST'], 'admin'),
+  { method: 'DELETE', path: '/admin/testusers/{id}', handler: 'admin' },
   // A2.5: ИИ-прокси
   { method: 'POST', path: '/ai/{task}', handler: 'ai' },
 ];

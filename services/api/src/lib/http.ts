@@ -25,6 +25,13 @@ export function caller(e: Event): AuthContext {
   const ctx = e.requestContext.authorizer?.lambda;
   if (!ctx?.uid) throw new HttpError(401, 'unauthorized');
   const roles = Array.isArray(ctx.roles) ? ctx.roles : String(ctx.roles ?? '').split(',').filter(Boolean);
+  // A6.1 тестовые пользователи: владелец (admin) действует от имени своего тестового пользователя <uid>~<id>
+  // (TU в прототипе). Чужих тестовых и обычных пользователей так открыть нельзя.
+  const as = e.headers?.['x-act-as'];
+  if (as && roles.includes('admin') && as.startsWith(`${ctx.uid}~`)) {
+    const r = String(e.headers?.['x-act-roles'] ?? 'client').split(',').filter((x) => x === 'client' || x === 'trainer');
+    return { uid: as, roles: (r.length ? r : ['client']) as Role[] };
+  }
   return { uid: ctx.uid, roles: roles as Role[] };
 }
 

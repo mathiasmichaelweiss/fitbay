@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { finOverview, isLateCancel, pkgSessDefault, pkgUsage, type PkgRequest, type SlotLike } from '@fitbay/calc';
 import { ConditionFailed, DynamoRepo, type Item, type Repo } from '../lib/repo';
+import { clientSnapshot } from './snapshot';
 import { body, caller, handle, HttpError, json, type AuthContext, type Event, type Result } from '../lib/http';
 
 /**
@@ -16,7 +17,7 @@ const DAY = 864e5;
 
 const strip = ({ PK: _p, SK, GSI1PK: _a, GSI1SK: _b, GSI2PK: _c, GSI2SK: _d, GSI3PK: _e, GSI3SK: _f, ...rest }: Item): Record<string, unknown> & { id: string } => ({ id: SK.slice(SK.indexOf('#') + 1), ...rest });
 /** Профиль тренера наружу: id = uid тренера (SK у профиля всегда PROFILE). */
-const tProfile = (it: Item) => ({ ...strip(it), id: String(it.PK).slice(8) });
+const tProfile = (it: Item): Record<string, unknown> & { id: string } => ({ ...strip(it), id: String(it.PK).slice(8) });
 const isTrainer = (w: AuthContext) => w.roles.some((r) => r === 'trainer' || r === 'partner' || r === 'admin');
 const str = (v: unknown, max = 500) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
@@ -118,8 +119,16 @@ export function makeHandler(repo: Repo, now: () => number = Date.now) {
         }
 
         if (route === '/trainer/clients') {
-          const links = (await repo.query(T(tid), { prefix: 'CLIENT#' })).map(strip);
-          return json(200, { items: links });
+          // renderCab: клиенты с действующим согласием и их свежие данные (снимок как в прототипе)
+          const links = (await repo.query(T(tid), { prefix: 'CLIENT#' })).filter((l) => l.consent === true);
+          const today = new Date(now()).toISOString().slice(0, 10);
+          const items = await Promise.all(
+            links.map(async (l) => {
+              const cid = l.SK.slice(7);
+              return { id: cid, name: l.name ?? '', since: l.since, ref: l.ref ?? null, consent: { at: l.since }, ...(await clientSnapshot(repo, cid, today)) };
+            }),
+          );
+          return json(200, { items: items.sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0)) });
         }
 
         if (route === '/trainer/slots') {
@@ -131,6 +140,15 @@ export function makeHandler(repo: Repo, now: () => number = Date.now) {
           const n = Math.min(8, Math.max(1, Number(b.n) || 1));
           if (!Number.isFinite(start) || start < now() - DAY) throw new HttpError(400, 'start must be a future timestamp (ms)');
           const place = b.place === 'gym' ? 'gym' : 'online';
+          // trStartFor прототипа: тренировка с клиентом без записи создает занятие «сейчас» на этого клиента
+          if (typeof b.bookedBy === 'string') {
+            const link = await repo.get(T(tid), C(b.bookedBy));
+            if (!link?.consent) throw new HttpError(403, 'client not linked');
+            const id = `ad${now()}`;
+            const it = slotItem(tid, id, { start, dur, place, addr: str(b.addr, 200), bookedBy: b.bookedBy, bookedName: link.name ?? '', bookedAt: now(), adhoc: true, createdAt: now() });
+            await repo.put(it);
+            return json(201, { items: [strip(it)] });
+          }
           const made = [];
           for (let i = 0; i < n; i++) {
             const s = start + i * dur * 6e4;
@@ -158,7 +176,7 @@ export function makeHandler(repo: Repo, now: () => number = Date.now) {
           const client = String(it.bookedBy);
           const upd = slotItem(tid, String(slotId), {
             ...strip(it), bookedBy: null, bookedName: null, bookedAt: null, burned: null,
-            cancel: { by: 'trainer', name: it.bookedName ?? '', uid: client, at: now(), reason },
+            cancel: { by: 'trainer', name: it.bookedName ?? '', uid: client, at: now(), reason, tname: String((await getProfile(tid))?.name ?? '') },
             cancelledFor: client,
           });
           await repo.put(upd);
@@ -166,10 +184,47 @@ export function makeHandler(repo: Repo, now: () => number = Date.now) {
           return json(200, strip(upd));
         }
         if (route === '/trainer/slots/{id}/note') {
-          // заметки тренера только к совместным занятиям (спека 4.5)
+          // заметки тренера только к совместным занятиям (спека 4.5); клиент тоже видит (tnote прототипа)
           const it = await repo.get(T(tid), `SLOT#${slotId}`);
           if (!it?.bookedBy) throw new HttpError(404, 'no booking');
-          const upd = { ...it, tnote: str(body(e).note, 2000) };
+          const b = body(e);
+          const prof = await getProfile(tid);
+          const tags = Array.isArray(b.tags) ? b.tags.filter((x): x is string => typeof x === 'string').slice(0, 6) : [];
+          const upd = { ...it, tnote: { tags, note: str(b.note, 2000), at: now(), by: String(prof?.name ?? '') } };
+          await repo.put(upd);
+          return json(200, strip(upd));
+        }
+        if (route === '/trainer/slots/{id}/plan') {
+          // openPlan прототипа: план тренировки к слоту (клиент видит «К чему готовиться»)
+          const it = await repo.get(T(tid), `SLOT#${slotId}`);
+          if (!it) throw new HttpError(404, 'not found');
+          const pl = body(e).plan;
+          const plan = pl && typeof pl === 'object' ? (pl as Record<string, unknown>) : null;
+          const upd = { ...it, plan: plan ? { name: str(plan.name, 120), note: str(plan.note, 1000), items: Array.isArray(plan.items) ? plan.items.slice(0, 20) : [] } : null };
+          await repo.put(upd);
+          return json(200, strip(upd));
+        }
+        if (route === '/trainer/slots/{id}/live') {
+          // идет совместная тренировка (live) или ее отменили
+          const it = await repo.get(T(tid), `SLOT#${slotId}`);
+          if (!it?.bookedBy) throw new HttpError(404, 'no booking');
+          const upd = { ...it, live: body(e).on === true ? { start: now() } : null };
+          await repo.put(upd);
+          return json(200, strip(upd));
+        }
+        if (route === '/trainer/slots/{id}/session') {
+          // trFinishFor прототипа: итог совместной тренировки; с метками или комментарием это и заметка тренера
+          const it = await repo.get(T(tid), `SLOT#${slotId}`);
+          if (!it?.bookedBy) throw new HttpError(404, 'no booking');
+          const b = body(e);
+          const se = (b.session && typeof b.session === 'object' ? b.session : {}) as Record<string, unknown>;
+          const items = Array.isArray(se.items) ? se.items.slice(0, 30) : [];
+          if (!items.length) throw new HttpError(400, 'Отметь хотя бы один выполненный подход галочкой.');
+          const tags = Array.isArray(se.tags) ? se.tags.filter((x): x is string => typeof x === 'string').slice(0, 6) : [];
+          const note = str(se.note, 2000);
+          const prof = await getProfile(tid);
+          const upd: Item = { ...it, live: null, session: { title: str(se.title, 120), start: Number(se.start) || now(), end: now(), items, tags, note } };
+          if (tags.length || note) upd.tnote = { tags, note, at: now(), by: String(prof?.name ?? '') };
           await repo.put(upd);
           return json(200, strip(upd));
         }
