@@ -47,7 +47,7 @@ export const useMeasureOps = () => useCol<Measure>('measures');
 export function useDaySummary(date: string): { target: Target | null; eaten: MacroSum; meals: Meal[] } {
   const { data: profile } = useProfile();
   const { data: meals = [] } = useMeals(date);
-  return { target: profile ? target(profile as CalcProfile, date) : null, eaten: sum(meals), meals };
+  return { target: profile ? target(profile as CalcProfile, date, { pct: profile.actPct ?? 0.5 }) : null, eaten: sum(meals), meals };
 }
 export const useCheckins = () => useQuery({ queryKey: ['checkins'], queryFn: () => api.list<Checkin>('checkins') });
 

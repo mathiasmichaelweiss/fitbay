@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import { de, ru } from 'date-fns/locale';
-import { BellIcon, CalendarDaysIcon, DumbbellIcon, EuroIcon, LayoutTemplateIcon, PaletteIcon, SettingsIcon, SunIcon, TrendingUpIcon, UserRoundIcon, UsersIcon, type LucideIcon } from 'lucide-react';
+import { BellIcon, RulerIcon, CalendarDaysIcon, DumbbellIcon, EuroIcon, LayoutTemplateIcon, PaletteIcon, SettingsIcon, SunIcon, TrendingUpIcon, UserRoundIcon, UsersIcon, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CalendarSheet } from '@/screens/CalendarSheet';
+import { ProfileSheet } from '@/screens/ProfileSheet';
+import { SettingsSheet } from '@/screens/SettingsSheet';
 import { Tile, Tiles } from '@/components/ui/tile';
 import { SingleToggle } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
-import { LANGS } from '@/i18n';
-import { today } from '@/data/hooks';
+import { today, useProfile } from '@/data/hooks';
 import { Today } from '@/screens/Today';
 import { Progress } from '@/screens/Progress';
 import { useNav, type CabinetTab, type ClientTab } from './store';
@@ -34,9 +35,12 @@ export function Shell() {
   const { mode, tab, cabinetTab, isTrainer, setMode, setTab, setCabinetTab } = useNav();
   const [day, setDay] = useState(today());
   const [cal, setCal] = useState(false);
+  const [prof, setProf] = useState(false);
+  const [settings, setSettings] = useState(false);
+  const { data: profile } = useProfile();
+  const setOnboarding = useNav((s) => s.setOnboarding);
   const inCabinet = isTrainer && mode === 'cabinet';
   const active = inCabinet ? cabinetTab : tab;
-  const nextLang = LANGS[(LANGS.indexOf(i18n.language as never) + 1) % LANGS.length]!;
   const locale = i18n.language === 'de' ? de : ru;
   const dayLabel = day === today() ? t('Сегодня') : format(parseISO(day), 'd MMMM', { locale });
 
@@ -54,9 +58,6 @@ export function Shell() {
           </h1>
         )}
         <div className="flex gap-2">
-          <Button variant="tile" size="icon" className="text-[0.8rem] font-semibold uppercase" aria-label={t('Язык')} onClick={() => void i18n.changeLanguage(nextLang)}>
-            {i18n.language}
-          </Button>
           {import.meta.env.DEV && (
             <Button variant="tile" size="icon" asChild>
               <a href="/ui" aria-label="UI kit" title="Библиотека компонентов">
@@ -67,7 +68,10 @@ export function Shell() {
           <Button variant="tile" size="icon" aria-label={t('Уведомления')}>
             <BellIcon className="size-5" />
           </Button>
-          <Button variant="tile" size="icon" aria-label={t('Настройки')}>
+          <Button variant="tile" size="icon" aria-label={t('Тело и цели')} onClick={() => setProf(true)}>
+            <RulerIcon className="size-5" />
+          </Button>
+          <Button variant="tile" size="icon" aria-label={t('Настройки')} onClick={() => setSettings(true)}>
             <SettingsIcon className="size-5" />
           </Button>
         </div>
@@ -111,6 +115,8 @@ export function Shell() {
       </nav>
 
       <CalendarSheet open={cal} day={day} onPick={setDay} onClose={() => setCal(false)} />
+      {profile && <ProfileSheet open={prof} profile={profile} onClose={() => setProf(false)} />}
+      <SettingsSheet open={settings} onClose={() => setSettings(false)} onOnboarding={() => setOnboarding(true)} />
     </div>
   );
 }

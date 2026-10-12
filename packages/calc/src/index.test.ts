@@ -76,3 +76,12 @@ describe('чек-ин', () => {
   it('ciBad: растянуто больше 4 дней', () => expect(ciBad([bad('2026-10-05'), bad('2026-10-11'), bad('2026-10-12')], '2026-10-12')).toBe(false));
   it('ciBad: давно', () => expect(ciBad([bad('2026-10-01'), bad('2026-10-02'), bad('2026-10-03')], '2026-10-12')).toBe(false));
 });
+
+import { eta } from './index';
+describe('eta (порт прототипа)', () => {
+  it('сушка 80 → 72: 0,75% веса в неделю = 14 нед.', () => expect(eta({ w: 80, tw: 72, goal: 'lose' })).toEqual({ weeks: 14 }));
+  it('набор 70 → 75: 0,25% = 29 нед.', () => expect(eta({ w: 70, tw: 75, goal: 'gain' })).toEqual({ weeks: 29 }));
+  it('цель не в ту сторону', () => expect(eta({ w: 80, tw: 85, goal: 'lose' })).toEqual({ wrong: true }));
+  it('удержание: нет срока', () => expect(eta({ w: 80, tw: 70, goal: 'keep' })).toBeNull());
+  it('уже на цели', () => expect(eta({ w: 80, tw: 80.05, goal: 'lose' })).toBeNull());
+});

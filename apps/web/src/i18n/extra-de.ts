@@ -32,4 +32,5 @@ export const extraDe: Record<string, string> = {
   'Выбрать другое блюдо': 'Anderes Gericht wählen',
   'без фиников, скира на 20% меньше': 'ohne Datteln, 20% weniger Skyr',
   'средняя': 'mittel',
+  'Режим': 'Modus',
 };

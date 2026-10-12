@@ -9,6 +9,9 @@ interface NavState {
   tab: ClientTab;
   cabinetTab: CabinetTab;
   isTrainer: boolean; // заглушка до Auth0 (A2.2): роль придёт из JWT
+  /** «Пройти знакомство заново» из настроек */
+  onboarding: boolean;
+  setOnboarding: (v: boolean) => void;
   setMode: (m: Mode) => void;
   setTab: (t: ClientTab) => void;
   setCabinetTab: (t: CabinetTab) => void;
@@ -20,6 +23,8 @@ export const useNav = create<NavState>((set) => ({
   tab: 'today',
   cabinetTab: 'clients',
   isTrainer: false,
+  onboarding: false,
+  setOnboarding: (onboarding) => set({ onboarding }),
   setMode: (mode) => set({ mode }),
   setTab: (tab) => set({ tab }),
   setCabinetTab: (cabinetTab) => set({ cabinetTab }),

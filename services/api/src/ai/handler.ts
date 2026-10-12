@@ -123,7 +123,7 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
         const p = prof as unknown as CalcProfile & { tw?: number };
         prompt = coachPrompt({
           profile: { sex: p.sex, age: p.birth ? age(p.birth, day) : (p.age ?? 30), h: p.h, w: p.w, tw: p.tw, act: p.act, goal: p.goal },
-          target: target(p, day),
+          target: target(p, day, { pct: Number((prof as Record<string, unknown>).actPct ?? 0.5) }),
           day,
           now: typeof b.time === 'string' && /^\d{2}:\d{2}$/.test(b.time) ? b.time : 'день уже прошел',
           workoutToday: wos.length ? wos.map((w) => String(w.title ?? '')).join('; ') : 'не было',

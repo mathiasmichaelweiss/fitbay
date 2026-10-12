@@ -7,9 +7,9 @@ import { FoodIcon } from '@/components/ui/food-icons';
 import { CapsRings, RC } from '@/components/ui/rings';
 import { Tile, Tiles } from '@/components/ui/tile';
 import { useQueryClient } from '@tanstack/react-query';
-import { mealsKey } from '@fitbay/calc';
+import { dayType, flexOf, mealsKey, type CalcProfile } from '@fitbay/calc';
 import { api, ApiError } from '@/data/api';
-import { today, useCoach, useDaySummary, useMealOps } from '@/data/hooks';
+import { shiftDay, today, useCoach, useDaySummary, useMealOps, useProfile, useSaveProfile } from '@/data/hooks';
 import { FatTile } from './FatTile';
 import { groupMeals, SLOTN, withTs } from '@/lib/meals';
 import { CheckinTile } from './Checkin';
@@ -25,6 +25,17 @@ export function Today({ date }: { date: string }) {
   const { target: tg, eaten: s, meals } = useDaySummary(date);
   const { remove } = useMealOps();
   const { data: saved } = useCoach(date);
+  const { data: profile } = useProfile();
+  const saveProfile = useSaveProfile();
+  const fx = profile ? flexOf(profile as unknown as CalcProfile) : null;
+  const dt = fx && profile ? dayType(date, profile as unknown as CalcProfile, fx) : null;
+  /** #dtChip прототипа: переключить тип дня вручную, старые отметки (больше 30 дней) чистятся. */
+  const toggleDay = () => {
+    if (!profile || !dt) return;
+    const ov = Object.fromEntries(Object.entries(profile.dayOv ?? {}).filter(([k]) => k >= shiftDay(today(), -30)));
+    ov[date] = dt === 'train' ? 'rest' : 'train';
+    saveProfile.mutate({ ...profile, dayOv: ov });
+  };
   const qc = useQueryClient();
   const [asking, setAsking] = useState(false);
   const [coachErr, setCoachErr] = useState('');
@@ -97,7 +108,13 @@ export function Today({ date }: { date: string }) {
             </span>
           </>
         }
-      />
+      >
+        {dt && (
+          <button type="button" data-testid="day-type" onClick={toggleDay} className="absolute right-[52px] top-3.5 rounded-full bg-black/18 px-2.5 py-1 text-[0.72rem] font-bold">
+            {dt === 'train' ? `🏋️ ${t('Тренировочный день')}` : `🛋 ${t('День отдыха')}`}
+          </button>
+        )}
+      </Tile>
       <Tile color="cream" label={t('БЕЛОК')} small value={`${s.p}${g}`} sub={`${t('из')} ${tg.p}${g}`} />
       <Tile
         color="yellow"

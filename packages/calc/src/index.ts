@@ -534,3 +534,12 @@ export function proj(D: DayStat[], today: string): { avg: number; month: number;
   const avg = use.reduce((a, x) => a + x.def, 0) / use.length;
   return { avg, month: (avg * 30) / 7700, n: use.length };
 }
+
+/** Срок до целевого веса в спокойном темпе (eta прототипа): недели, «цель не в ту сторону» или null. */
+export function eta(p: Pick<CalcProfile, 'w' | 'tw' | 'goal'>): { weeks: number } | { wrong: true } | null {
+  const d = Math.abs(p.w - (p.tw || p.w));
+  if (p.goal === 'keep' || d < 0.1) return null;
+  const rate = p.w * ({ lose: 0.0075, recomp: 0.004, gain: 0.0025 } as Record<string, number>)[p.goal]!;
+  if ((p.goal === 'gain') !== ((p.tw ?? p.w) > p.w)) return { wrong: true };
+  return { weeks: Math.ceil(d / rate) };
+}

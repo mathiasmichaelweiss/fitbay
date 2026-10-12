@@ -43,7 +43,7 @@ export function CalendarSheet({ open, day, onPick, onClose }: { open: boolean; d
           {Array.from({ length: days }, (_, i) => {
             const ds = `${month}-${String(i + 1).padStart(2, '0')}`;
             const s = sum(meals.filter((x) => x.date === ds));
-            const tg = profile ? target(profile as unknown as CalcProfile, ds) : null;
+            const tg = profile ? target(profile as unknown as CalcProfile, ds, { pct: profile.actPct ?? 0.5 }) : null;
             const fut = ds > td;
             return (
               <button

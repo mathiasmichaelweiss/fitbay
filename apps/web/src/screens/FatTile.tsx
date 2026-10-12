@@ -15,10 +15,11 @@ export function FatTile({ date, meals }: { date: string; meals: Meal[] }) {
   const p = profile as unknown as CalcProfile;
   const u = t('г');
   const all = [...hist.filter((m) => m.date !== date), ...meals];
-  const D = dayStats(all, p, date, weights);
+  const pct = profile.actPct ?? 0.5;
+  const D = dayStats(all, p, date, weights, {}, pct);
   const T0 = D.find((x) => x.d === date);
   const P = proj(D, today());
-  const goal = target(p, date).k;
+  const goal = target(p, date, { pct }).k;
   const eaten = T0?.eat ?? 0;
   const lastW = weights.map((w) => w.date).sort().at(-1);
   const stale = !lastW || (Date.parse(`${today()}T12:00:00`) - Date.parse(`${lastW}T12:00:00`)) / 864e5 > 7;
@@ -28,9 +29,9 @@ export function FatTile({ date, meals }: { date: string; meals: Meal[] }) {
   const live = date === today() && eaten < goal * 0.85 && new Date().getHours() < 21 && !groupMeals(meals.map(withTs), goal).some((g) => g.slot === 'dinner');
   if (live) {
     const w = weightOn(weights, date, p.w);
-    const tdee = expenditure(p, date, {}, w);
+    const tdee = expenditure(p, date, { pct }, w);
     const pk = (T0?.prot ?? 0) / w;
-    const fat = fatFromDeficit(tdee - goal, Math.max(pk, target(p, date).p / w));
+    const fat = fatFromDeficit(tdee - goal, Math.max(pk, target(p, date, { pct }).p / w));
     return (
       <Tile
         color="cream"

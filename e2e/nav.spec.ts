@@ -9,7 +9,9 @@ test('4 раздела клиента и переключение языка б�
     await page.getByTestId('tabbar').getByRole('button', { name }).click();
     await expect(page.getByTestId('title')).toHaveText(name);
   }
-  await page.getByRole('button', { name: 'Язык' }).click();
+  await page.getByRole('button', { name: 'Настройки' }).click();
+  await page.getByRole('radio', { name: 'Deutsch' }).click();
+  await page.keyboard.press('Escape');
   await expect(page.getByTestId('tabbar')).toContainText('Heute');
   await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 });

@@ -31,6 +31,10 @@ export interface Profile {
   macro?: { on?: boolean; p: number; f: number; c: number };
   flex?: { on?: boolean; days: number[]; train: { p: number; f: number; c: number }; rest: { p: number; f: number; c: number } };
   dayOv?: Record<string, 'train' | 'rest'>;
+  /** Доля сожжённого в норму: 0, 0.5, 1 (по умолчанию 0.5). */
+  actPct?: number;
+  /** Цели активности на день (renderAct): сжечь ккал, активных минут. */
+  actGoal?: { k: number; m: number };
   consents: Partial<Record<ConsentKind, Consent>>;
   onboarded?: string;
   createdAt?: string;

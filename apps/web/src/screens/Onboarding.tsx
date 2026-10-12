@@ -41,6 +41,7 @@ export function Onboarding({ initial }: { initial?: Profile | null }) {
   const { t, i18n } = useTranslation();
   const save = useSaveProfile();
   const setTab = useNav((s) => s.setTab);
+  const setOnboarding = useNav((s) => s.setOnboarding);
   const [step, setStep] = useState(0);
   const [cons, setCons] = useState(!!initial?.consents.health);
   const [path, setPath] = useState<Path | null>(null);
@@ -83,7 +84,10 @@ export function Onboarding({ initial }: { initial?: Profile | null }) {
 
   const finish = () =>
     save.mutate(profile(), {
-      onSuccess: () => setTab(path === 'trainer' || path === 'code' ? 'trainer' : 'today'),
+      onSuccess: () => {
+        setOnboarding(false);
+        setTab(path === 'trainer' || path === 'code' ? 'trainer' : 'today');
+      },
     });
 
   return (
