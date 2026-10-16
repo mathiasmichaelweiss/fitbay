@@ -5,7 +5,7 @@
  * Семантика local повторяет сервер: коллекции с id, «одна запись в день» по дате, единичные сущности.
  */
 export type Single = 'profile' | 'plan' | 'tips' | 'active-workout' | 'before-after';
-export type Collection = 'meals' | 'measures' | 'checkins' | 'workouts' | 'programs' | 'activities' | 'recipes';
+export type Collection = 'meals' | 'measures' | 'checkins' | 'workouts' | 'programs' | 'activities' | 'recipes' | 'templates';
 type Row = Record<string, unknown> & { id: string };
 
 const BY_DATE: Collection[] = ['measures', 'checkins'];

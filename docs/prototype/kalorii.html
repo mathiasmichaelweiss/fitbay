@@ -1535,7 +1535,7 @@ setMode(mode);
 })();
 
 /* quick day log */
-const SLOT_H={breakfast:8,lunch:13,snack:16,dinner:19};let qItems=[];
+const SLOT_H={breakfast:8,lunch:13,snack:16,dinner:19};let qItems=[],qHist=null;
 $("quickBtn").onclick=()=>{closeAll();$("sh-quick").classList.add("open");document.body.style.overflow="hidden";renderQ();applyStatic($("sh-quick"))};
 $("qClose").onclick=()=>{$("sh-quick").classList.remove("open");document.body.style.overflow=""};
 $("qGo").onclick=async()=>{if(!(await aiGuard("food",m=>{$("qErr").textContent=m;$("qErr").hidden=false})))return;
@@ -1543,13 +1543,16 @@ $("qGo").onclick=async()=>{if(!(await aiGuard("food",m=>{$("qErr").textContent=m
   if(!txt){er.textContent=T("Напиши или надиктуй, что ел.");er.hidden=false;return}
   if(!sample){er.textContent=T("Оценка через Claude недоступна здесь. Введи цифры вручную.");er.hidden=false;return}
   const b=$("qGo");b.disabled=true;b.textContent=T("Разбираю...");
+  let hist="";try{if(!qHist&&db&&uid){const sn=await col().where("type","==","meal").get();const lim=iso(new Date(Date.now()-45*864e5));const seen=new Set();qHist=sn.docs.map(d=>d.data()).filter(x=>x.date>=lim&&x.name&&x.kcal).sort((a,b)=>(b.ts||0)-(a.ts||0)).filter(x=>{const k=x.name.toLowerCase();if(seen.has(k))return false;seen.add(k);return true}).slice(0,60).map(x=>`${x.date}|${x.name}${x.desc?" ("+String(x.desc).slice(0,80)+")":""}|${x.grams?Math.round(x.grams)+" г":"?"}|${Math.round(x.kcal)} ккал, Б ${Math.round(x.protein||0)}, Ж ${Math.round(x.fat||0)}, У ${Math.round(x.carbs||0)}`).join("\n")}hist=qHist||""}catch(_){}
   const book=st.recs.map(r=>{const h=p100(r);return `${r.id}|${r.name}|порция ${r.grams||"?"} г|${h?Math.round(h.kcal)+" ккал/100г":r.kcal+" ккал на порцию"}`}).join("\n");
   try{
     const r=await AI.json(`Ты нутрициолог. Человек рассказал, что ел за день. Разбери рассказ на отдельные блюда.
 Рассказ: """${txt}"""
 Его книга рецептов (id|название|порция|калорийность):
 ${book||"пусто"}
-Правила: если блюдо явно совпадает с рецептом из книги, укажи его recId и вес порции (если человек не сказал иначе, бери его обычную порцию); КБЖУ для таких можешь не считать. Если в книге нет, оцени типичную порцию и посчитай КБЖУ сам. Определи прием пищи: breakfast, lunch, dinner или snack, по словам человека или по порядку рассказа. Названия ${lang==="de"?"на немецком":"по-русски"}, коротко.
+Что он записывал раньше (дата|название|вес|КБЖУ на этот вес):
+${hist||"нет данных"}
+Правила: если человек ссылается на то, что уже ел раньше («как вчера», «посмотри в меню», «то же, что в прошлый раз») или продукт совпадает с записанным раньше, бери его КБЖУ из этих записей и пересчитай на названный вес. Если блюдо явно совпадает с рецептом из книги, укажи его recId и вес порции (если человек не сказал иначе, бери его обычную порцию); КБЖУ для таких можешь не считать. Если в книге нет, оцени типичную порцию и посчитай КБЖУ сам. Определи прием пищи: breakfast, lunch, dinner или snack, по словам человека или по порядку рассказа. Названия ${lang==="de"?"на немецком":"по-русски"}, коротко.
 Ответь только JSON: {"items":[{"slot":"breakfast","name":"...","recId":"id или null","grams":число,"kcal":число,"protein":число,"fat":число,"carbs":число,"desc":"что учтено, коротко"}]}`,{modelTier:"default",cache:false});
     qItems=(r.items||[]).map(x=>{const rec=x.recId&&st.recs.find(z=>z.id===x.recId);
       if(rec){const h=p100(rec),g=+x.grams||rec.grams||100;

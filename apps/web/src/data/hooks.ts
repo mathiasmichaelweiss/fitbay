@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ActiveWorkout, ActivityEntry, Checkin, Meal, Measure, Profile, Program, Recipe, Workout } from '@fitbay/shared';
-import { target, sum, woKcal, type CalcProfile, type DayContext, type MacroSum, type Target } from '@fitbay/calc';
+import { target, sum, woKcal, curPhase, type CalcProfile, type DayContext, type GoalPlan, type MacroSum, type Target } from '@fitbay/calc';
 import { api, type Collection } from './api';
 
 export const today = () => {
@@ -102,11 +102,13 @@ export function useDayCtx(): (day: string) => DayContext {
   const { data: profile } = useProfile();
   const { data: workouts = [] } = useWorkouts();
   const { data: acts = [] } = useActivities();
+  const { data: plan } = useQuery({ queryKey: ['plan'], queryFn: () => api.getOne<GoalPlan>('plan').catch(() => null) });
+  const phase = curPhase(plan);
   const pct = profile?.actPct ?? 0.5;
   return (day) => {
     const wos = workouts.filter((w) => w.date === day);
     const actKcal = wos.reduce((k, w) => k + (woKcal(w.start, w.end, w.items, w.kcal, profile?.w) || 0), 0) + acts.filter((a) => a.date === day).reduce((k, a) => k + (+a.kcal || 0), 0);
-    return { pct, actKcal, hasWorkout: wos.length > 0 };
+    return { pct, actKcal, hasWorkout: wos.length > 0, phase };
   };
 }
 /** Сожжено по дням для dayStats. */

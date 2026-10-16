@@ -547,3 +547,4 @@ export * from './train';
 export * from './weight';
 export * from './pkgprice';
 export * from './clients';
+export * from './plan';

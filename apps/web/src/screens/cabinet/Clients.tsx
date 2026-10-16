@@ -21,14 +21,15 @@ import { SingleToggle } from '@/components/ui/toggle-group';
 import { askConfirm } from '@/components/ui/confirm';
 import { api } from '@/data/api';
 import { today } from '@/data/hooks';
-import { useCabOps, useClients, useMySlots, useTrainerReqs, type Client } from '@/data/cabinet';
-import { useTrainer } from '@/data/trainers';
+import { useMyTrainer, useCabOps, useClients, useMySlots, useTrainerReqs, type Client } from '@/data/cabinet';
 import { CI_F, CI_M } from '@/screens/Checkin';
 import { CiGrid } from '@/screens/CiGrid';
 import { NoteView } from '@/screens/train/WorkoutSheet';
 import { UsageBar } from '@/screens/trainer/TrainerSheet';
 import { cn } from '@/lib/utils';
 import { useNav } from '@/nav/store';
+import { CabHead } from './Head';
+import { PlanSec, usePlanSum } from './PlanEd';
 import { WorkoutsSection, WodSheet, type WodKey } from './Workouts';
 
 const LV: Record<PatLevel, string> = { bad: 'var(--orange)', warn: 'var(--yellow)', good: '#7BC67B' };
@@ -131,6 +132,7 @@ export function ClientsList() {
   const setOpen = (id: string | null) => setCl({ cl: id ? { id } : null });
   return (
     <div data-testid="clients-list">
+      <CabHead />
       {clients.length ? (
         clients.map((c) => {
           const s = clStats(c as never, today());
@@ -189,7 +191,7 @@ export function ClientsList() {
   );
 }
 
-type Sec = 'food' | 'pat' | 'wo' | 'ci' | 'body' | 'act' | 'tips' | 'ba' | 'prof';
+type Sec = 'food' | 'pat' | 'plan' | 'wo' | 'ci' | 'body' | 'act' | 'tips' | 'ba' | 'prof';
 
 /** openClient прототипа: плитки клиента. */
 function ClientSheet({ cid, sec0, onClose }: { cid: string; sec0?: Sec; onClose: () => void }) {
@@ -199,6 +201,7 @@ function ClientSheet({ cid, sec0, onClose }: { cid: string; sec0?: Sec; onClose:
   const { data: slots = [] } = useMySlots();
   const { dl, dt, lang } = useFmt();
   const [sec, setSec] = useState<Sec | null>(sec0 ?? null);
+  const planSum = usePlanSum(cid);
   const c = clients.find((x) => x.id === cid);
   if (!c) return null;
   const s = clStats(c as never, today());
@@ -262,6 +265,15 @@ function ClientSheet({ cid, sec0, onClose }: { cid: string; sec0?: Sec; onClose:
             }}
           />
         </Tile>
+        <Tile
+          full
+          className="min-h-24 bg-[linear-gradient(135deg,#2a1a10,#161616)]"
+          data-testid="cl-plan"
+          onClick={() => setSec('plan')}
+          label={<span className="text-brand-orange">{t('ПЛАН ЦЕЛЕЙ')}</span>}
+          title={t('Фазы: сушка, набор, удержание')}
+          sub={planSum}
+        />
         {c.ba && (
           <Tile
             full
@@ -362,6 +374,7 @@ function ClientSheet({ cid, sec0, onClose }: { cid: string; sec0?: Sec; onClose:
 const TITLES: Record<Sec, string> = {
   food: 'Питание',
   pat: 'Анализ поведения',
+  plan: 'План целей',
   wo: 'Тренировки',
   ci: 'Самочувствие',
   body: 'Вес и замеры',
@@ -379,6 +392,7 @@ function SectionSheet({ c, sec, onClose }: { c: Client; sec: Sec; onClose: () =>
     <SheetPage open onOpenChange={(o) => !o && onClose()} title={t(TITLES[sec])}>
       {sec === 'food' && <FoodSec c={c} />}
       {sec === 'pat' && <PatSec c={c} />}
+      {sec === 'plan' && <PlanSec c={c} />}
       {sec === 'wo' && <WorkoutsSection c={c} onOpen={setWod} />}
       {sec === 'ci' && <CiSec c={c} />}
       {sec === 'body' && <BodySec c={c} />}
@@ -550,7 +564,7 @@ function PatSec({ c }: { c: Client }) {
   const { t, i18n } = useTranslation();
   const { lang } = useFmt();
   const ops = useCabOps();
-  const { data: me } = useTrainer(null);
+  const { data: me } = useMyTrainer();
   const [open, setOpen] = useState<number | null>(null);
   const [sent, setSent] = useState<Record<number, string>>({});
   const [ai, setAi] = useState('');
@@ -785,7 +799,7 @@ function ActSec({ c }: { c: Client }) {
 function TipsSec({ c }: { c: Client }) {
   const { t, i18n } = useTranslation();
   const ops = useCabOps();
-  const { data: me } = useTrainer(null);
+  const { data: me } = useMyTrainer();
   const [cat, setCat] = useState<'food' | 'train'>('food');
   const [text, setText] = useState('');
   const [err, setErr] = useState('');
@@ -910,7 +924,7 @@ function TipsSec({ c }: { c: Client }) {
 function BaSec({ c }: { c: Client }) {
   const { t, i18n } = useTranslation();
   const ops = useCabOps();
-  const { data: me } = useTrainer(null);
+  const { data: me } = useMyTrainer();
   const [note, setNote] = useState(c.ba?.note ?? '');
   const d = c.ba;
   if (!d) return <p className="opacity-60">{t('Клиент еще не загрузил фото.')}</p>;

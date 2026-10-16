@@ -57,6 +57,10 @@ const MOCK_DEFAULTS: Record<string, string> = {
     { slot: 'lunch', name: 'Лосось с рисом', recId: null, grams: 350, kcal: 560, protein: 35, fat: 18, carbs: 60, desc: '' },
     { slot: 'snack', name: 'Протеиновый батончик', recId: null, grams: 60, kcal: 210, protein: 20, fat: 7, carbs: 18, desc: '' },
   ] }),
+  'Составь план клиента из фаз': JSON.stringify({ phases: [
+    { type: 'cut', name: 'Сушка', pct: -20, prot: 2.2, end: { kind: 'weeks', val: 8 }, note: 'Держим небольшой дефицит и много белка.', workouts: [{ name: 'День A: Низ', items: [{ id: 'Barbell_Squat', sets: 4, reps: '6-8' }, { id: 'Nope', sets: 3, reps: '10' }] }, { name: 'День B: Верх', items: [{ id: 'Pushups', sets: 3, reps: '10-12' }] }], nutrition: { rules: ['Белок в каждом приеме пищи'], menu: ['Завтрак: скир с ягодами ~400 ккал'] } },
+    { type: 'maint', name: 'Удержание', pct: 0, prot: 1.8, end: { kind: 'none' }, note: 'Закрепляем результат.', workouts: [], nutrition: { rules: [], menu: [] } },
+  ] }),
   'Посчитай КБЖУ этих продуктов': JSON.stringify({ items: [{ n: 'Масло', g: 10, kcal: 90, p: 0, f: 10, c: 0 }] }),
   'Оцени, сколько грамм': JSON.stringify({ grams: 300 }),
   'сегодня изменил состав': JSON.stringify({ items: [{ n: 'Скир', g: 200, kcal: 130, p: 22, f: 0, c: 8 }], note: 'без фиников' }),

@@ -22,7 +22,9 @@ interface NavState {
   bell: boolean;
   /** открытая карточка клиента у тренера и раздел в ней (openClient, openClSec прототипа) */
   cl: { id: string; sec?: string } | null;
-  open: (p: Partial<Pick<NavState, 'catalog' | 'trainer' | 'share' | 'tips' | 'bell' | 'cl'>>) => void;
+  /** «Мой путь» (sh-path) */
+  path: boolean;
+  open: (p: Partial<Pick<NavState, 'catalog' | 'trainer' | 'share' | 'tips' | 'bell' | 'cl' | 'path'>>) => void;
   setOnboarding: (v: boolean) => void;
   setMode: (m: Mode) => void;
   setCabView: (v: CabView) => void;
@@ -52,6 +54,7 @@ export const useNav = create<NavState>((set, get) => ({
   tips: null,
   bell: false,
   cl: null,
+  path: false,
   open: (p) => set(p),
   setOnboarding: (onboarding) => set({ onboarding }),
   // как setMode прототипа: clients без тренера превращается в food

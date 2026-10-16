@@ -26,7 +26,7 @@ describe('ИИ-прокси', () => {
   it('неизвестная задача 404, ещё не перенесённая 501', async () => {
     const { call } = setup();
     expect((await call('poem')).s).toBe(404);
-    expect((await call('plan_ai')).s).toBe(501);
+    expect((await call('recipe')).s).toBe(501);
   });
   it('еда по тексту: JSON-ответ, учёт задач и токенов', async () => {
     const { call, repo, provider } = setup();
@@ -195,5 +195,28 @@ describe('блюда из книги рецептов', () => {
     expect(prompt).toContain('Pushups|Pushups|chest');
     expect(prompt).not.toContain('Barbell_Deadlift|');
     expect((await repo.get('USER#u1', 'USAGE#2026-10-12'))?.c).toEqual({ trainer: 1 });
+  });
+});
+
+describe('рассказ за день: история еды', () => {
+  it('последние записи без повторов попадают в промпт', async () => {
+    const { call, repo, provider } = setup(new MockProvider({}));
+    await repo.put({ PK: 'USER#u1', SK: 'MEAL#2026-10-11#1', date: '2026-10-11', name: 'Скир', grams: 150, kcal: 95, protein: 16, fat: 0, carbs: 6 });
+    await repo.put({ PK: 'USER#u1', SK: 'MEAL#2026-10-10#1', date: '2026-10-10', name: 'скир', grams: 200, kcal: 130, protein: 22, fat: 0, carbs: 8 });
+    await call('day_story', { text: 'скир как вчера' });
+    const pr = provider!.calls[0]!.prompt;
+    expect(pr).toContain('2026-10-11|Скир|150 г|95 ккал, Б 16, Ж 0, У 6');
+    expect(pr).not.toContain('2026-10-10|скир');
+  });
+});
+
+describe('план целей (plan_ai)', () => {
+  it('только при согласии клиента, неизвестные упражнения отброшены', async () => {
+    const { call, repo } = setup(new MockProvider({}));
+    expect((await call('plan_ai', { cid: 'c1', text: 'сушка, потом удержание' })).s).toBe(403);
+    await repo.put({ PK: 'TRAINER#u1', SK: 'CLIENT#c1', consent: true });
+    const r = await call('plan_ai', { cid: 'c1', text: 'сушка, потом удержание', place: 'gym' });
+    expect(r.b.result.phases.map((p: { type: string }) => p.type)).toEqual(['cut', 'maint']);
+    expect(r.b.result.phases[0].workouts[0].items.map((i: { id: string }) => i.id)).toEqual(['Barbell_Squat']);
   });
 });

@@ -1,3 +1,6 @@
+import { Fin } from '@/screens/cabinet/Fin';
+import { PathSheet, PhaseCelebrate } from '@/screens/plan/Path';
+import { usePlanTick } from '@/data/plan';
 import { ClientsList } from '@/screens/cabinet/Clients';
 import { Schedule } from '@/screens/cabinet/Schedule';
 import { useState, type ReactNode } from 'react';
@@ -7,7 +10,6 @@ import { de, ru } from 'date-fns/locale';
 import { CalendarSheet } from '@/screens/CalendarSheet';
 import { ProfileSheet } from '@/screens/ProfileSheet';
 import { SettingsSheet } from '@/screens/SettingsSheet';
-import { Tile, Tiles } from '@/components/ui/tile';
 import { SingleToggle } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { today, useProfile } from '@/data/hooks';
@@ -92,6 +94,7 @@ export function Shell() {
   const { t, i18n } = useTranslation();
   const { mode, cabView, isTrainer, setMode, setCabView, prof, setProf, open: openSheet, trainer } = useNav();
   const bellN = useBellCount();
+  usePlanTick();
   const [day, setDay] = useState(today());
   const [cal, setCal] = useState(false);
   const [settings, setSettings] = useState(false);
@@ -106,6 +109,8 @@ export function Shell() {
     <div className="mx-auto min-h-dvh w-full max-w-[520px] px-[14px] pb-[calc(24px+env(safe-area-inset-bottom))] pt-[14px]">
       <WoBar />
       <WorkoutSheet />
+      <PathSheet />
+      <PhaseCelebrate />
       {/* .top прототипа */}
       <header className="mx-1 mb-3.5 mt-1 flex items-center justify-between gap-2">
         <button
@@ -149,9 +154,7 @@ export function Shell() {
             ) : cabView === 'sched' ? (
               <Schedule />
             ) : (
-              <Tiles>
-                <Tile full color="dark" label={t('Обзор')} title={t('Скоро здесь будет раздел')} />
-              </Tiles>
+              <Fin />
             )}
           </div>
         )}

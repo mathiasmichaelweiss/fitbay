@@ -58,4 +58,8 @@ export const extraDe: Record<string, string> = {
   "Я понимаю, что могу отозвать согласие в любой момент": "Ich weiß, dass ich die Einwilligung jederzeit widerrufen kann",
   "Повторы": "Wiederholungen",
   "Видно только тебе. Данные тестовых пользователей хранятся отдельно, твой профиль, цели и записи они не трогают.": "Nur für dich sichtbar. Die Daten der Testnutzer werden getrennt gespeichert, dein Profil, deine Ziele und Einträge bleiben unberührt.",
+  "шаг": "Schritt",
+  "повт.": "Wdh.",
+  "Новая фаза": "Neue Phase",
+  "План целей": "Zielplan",
 };

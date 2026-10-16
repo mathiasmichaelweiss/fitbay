@@ -14,6 +14,7 @@ import { FatTile } from './FatTile';
 import { TrendSheet } from './TrendSheet';
 import { MsRemindTile } from './Measures';
 import { TipTile } from './trainer/Tiles';
+import { PlanTile } from './plan/Path';
 import { groupMeals, SLOTN, withTs } from '@/lib/meals';
 import { CheckinTile } from './Checkin';
 import { AddFood } from './food/AddFood';
@@ -132,6 +133,7 @@ export function Today({ date }: { date: string }) {
 
       <CheckinTile />
       {date === today() && <MsRemindTile />}
+      <PlanTile />
       <TipTile cat="food" />
 
       <div className="col-span-full rounded-xl bg-card p-4">

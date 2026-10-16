@@ -6,8 +6,15 @@ import { SheetPage } from '@/components/ui/sheet-page';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useCabOps, useClients, useMySlots, type Client, type ClWorkout, type TSlot } from '@/data/cabinet';
-import { useTrainer } from '@/data/trainers';
+import {
+  useMyTrainer,
+  useCabOps,
+  useClients,
+  useMySlots,
+  type Client,
+  type ClWorkout,
+  type TSlot,
+} from '@/data/cabinet';
 import { NoteView } from '@/screens/train/WorkoutSheet';
 import { PlanFact } from '@/screens/train/History';
 import { useEx } from '@/screens/train/exercises';
@@ -67,7 +74,7 @@ export function useTrStart() {
   const { t } = useTranslation();
   const { data: slots = [] } = useMySlots();
   const { data: clients = [] } = useClients();
-  const { data: me } = useTrainer(null);
+  const { data: me } = useMyTrainer();
   const ops = useCabOps();
   const { db } = useEx();
   return async (cid: string, slotId: string | null) => {

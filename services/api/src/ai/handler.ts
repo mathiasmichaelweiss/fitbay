@@ -4,7 +4,7 @@ import { DynamoRepo, type Item, type Repo } from '../lib/repo';
 import { body, caller, handle, HttpError, json, type Event, type Result } from '../lib/http';
 import { communityHint, personalCorrections } from '../corrections/handler';
 import { communityHintText, personalHintText } from '../prompts/hints';
-import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt, workoutPrompt, activityPrompt, activityEditPrompt, clientAiPrompt, actShotsExtra, actTextExtra } from './prompts';
+import { coachPrompt, dayStoryPrompt, foodItemsPrompt, foodModPrompt, foodPortionPrompt, foodPrompt, workoutPrompt, activityPrompt, activityEditPrompt, clientAiPrompt, planPrompt, actShotsExtra, actTextExtra } from './prompts';
 import { AI_EQ, D, EX, EXM } from '@fitbay/shared/exercises';
 import { AiError, MockProvider, OpenAIProvider, parseJson, type Provider } from './provider';
 import { AIMSG, KIND, LIMITS } from './limits';
@@ -13,7 +13,7 @@ import { exNames, exSteps } from './extr';
 import { clientSnapshot } from '../trainer/snapshot';
 
 /** Задачи, промпты которых уже перенесены. Остальные появятся вместе с их экранами (A3.4 тренировки, A4.3 план). */
-export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai', 'activity', 'ex_names', 'ex_steps', 'client_ai'];
+export const PORTED: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'workout_ai', 'activity', 'ex_names', 'ex_steps', 'client_ai', 'plan_ai'];
 const ALL: AiTask[] = ['food_photo', 'food_text', 'food_items', 'food_portion', 'food_mod', 'day_story', 'coach', 'activity', 'recipe', 'workout_ai', 'plan_ai', 'label_ocr', 'ex_names', 'ex_steps', 'client_ai'];
 const UNAVAILABLE = 'ИИ недоступен в этом окне.';
 const DAY = 864e5;
@@ -112,7 +112,21 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
             return `${id}|${r.name}|порция ${r.grams || '?'} г|${p100?.kcal ? `${Math.round(p100.kcal)} ккал/100г` : `${r.kcal} ккал на порцию`}`;
           })
           .join('\n');
-        prompt = dayStoryPrompt(txt, book, lang);
+        // история еды за 45 дней, без повторов названий, 60 последних (qHist прототипа)
+        const seen = new Set<string>();
+        const hist = (await repo.query(U(who.uid), { from: `MEAL#${shift(day, -45)}`, to: `MEAL#${day}\uffff` }))
+          .filter((m) => m.name && m.kcal)
+          .sort((a, b) => (b.SK < a.SK ? -1 : 1))
+          .filter((m) => {
+            const k = String(m.name).toLowerCase();
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          })
+          .slice(0, 60)
+          .map((x) => `${x.date}|${x.name}${x.desc ? ` (${String(x.desc).slice(0, 80)})` : ''}|${x.grams ? `${Math.round(Number(x.grams))} г` : '?'}|${Math.round(Number(x.kcal))} ккал, Б ${Math.round(Number(x.protein) || 0)}, Ж ${Math.round(Number(x.fat) || 0)}, У ${Math.round(Number(x.carbs) || 0)}`)
+          .join('\n');
+        prompt = dayStoryPrompt(txt, book, lang, hist);
       } else if (task === 'coach') {
         if (!prof) throw new HttpError(400, 'profile required');
         const meals = (await repo.query(U(who.uid), { prefix: `MEAL#${day}` })).map(asMeal);
@@ -171,6 +185,33 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
           },
           lang,
         );
+      } else if (task === 'plan_ai') {
+        // aiGenPlan прототипа: тренер описывает этапы, ИИ собирает фазы с тренировками и питанием
+        const cid = String(b.cid ?? '');
+        const link = await repo.get(`TRAINER#${who.uid}`, `CLIENT#${cid}`);
+        if (!link?.consent) throw new HttpError(403, 'forbidden');
+        const text = typeof b.text === 'string' ? b.text.trim().slice(0, 2000) : '';
+        if (!text) throw new HttpError(400, 'Опиши этапы плана.');
+        const place = (['gym', 'home', 'street'] as const).find((x) => x === b.place) ?? 'gym';
+        const c = await clientSnapshot(repo, cid, day);
+        const lm = (c.measures.at(-1) ?? {}) as Record<string, unknown>;
+        const D14 = c.days.slice(-14);
+        const avg = (f: 'k' | 'p') => (D14.length ? Math.round(D14.reduce((a, d) => a + d[f], 0) / D14.length) : null);
+        const eq = { gym: null, home: ['body only', 'dumbbell', 'kettlebells', 'bands'], street: ['body only', 'other'] }[place];
+        const ok = (e: (typeof EX)[number]) => !eq || eq.includes(e.e);
+        const cand = EX.filter((e) => ['strength', 'powerlifting', 'plyometrics'].includes(e.c) && ok(e) && (e as { m?: string }).m === 'compound')
+          .slice(0, 90)
+          .concat(EX.filter((e) => e.c === 'strength' && ok(e) && (e as { m?: string }).m !== 'compound').slice(0, 50));
+        prompt = planPrompt({
+          text,
+          p: c.profile ?? {},
+          measures: Object.entries(lm).filter(([k]) => !['date', 'at', 'type'].includes(k)).map(([k, v]) => `${k} ${v}`).join(', '),
+          avgK: avg('k'),
+          avgP: avg('p'),
+          place,
+          cand: cand.map((e) => `${e.i} (${e.n})`).join(', '),
+          lang,
+        });
       } else if (task === 'workout_ai') {
         if (!prof) throw new HttpError(400, 'profile required');
         const place = (['gym', 'street', 'home'] as const).find((x) => x === b.place) ?? 'gym';
@@ -220,6 +261,31 @@ export function makeHandler(repo: Repo, shared: Repo, provider: Provider | null,
         const text = out.text.replace(/\s*[—–]\s*/g, ', ').trim(); // как в прототипе: без длинного тире
         await repo.put({ PK: U(who.uid), SK: `COACH#${day}`, text, key: coachKey, at: now() });
         return json(200, { text });
+      }
+      if (task === 'plan_ai') {
+        type R = { phases?: { type?: string; name?: string; pct?: unknown; prot?: unknown; end?: { kind?: string; val?: unknown }; note?: string; workouts?: { name?: string; items?: { id?: string; sets?: unknown; reps?: unknown }[] }[]; nutrition?: { rules?: unknown[]; menu?: unknown[] } }[] };
+        const r = (() => {
+          try {
+            return parseJson(out.text) as R;
+          } catch {
+            return {} as R;
+          }
+        })();
+        const TY = ['cut', 'bulk', 'maint', 'recomp', 'custom'];
+        const phases = (r.phases ?? []).map((x) => ({
+          type: TY.includes(String(x.type)) ? String(x.type) : 'custom',
+          name: String(x.name ?? ''),
+          pct: +(x.pct as number) || 0,
+          prot: +(x.prot as number) || 0,
+          end: { kind: ['weeks', 'weight', 'date', 'none'].includes(String(x.end?.kind)) ? String(x.end?.kind) : 'none', val: x.end?.val ?? '' },
+          note: String(x.note ?? ''),
+          workouts: (x.workouts ?? [])
+            .map((w) => ({ name: String(w.name ?? ''), items: (w.items ?? []).flatMap((i) => (i.id && EXM[i.id] ? [{ id: i.id, sets: +(i.sets as number) || 3, reps: String(i.reps ?? '10') }] : [])) }))
+            .filter((w) => w.items.length),
+          nutrition: { rules: (x.nutrition?.rules ?? []).map(String), menu: (x.nutrition?.menu ?? []).map(String) },
+        }));
+        if (!phases.length) throw new HttpError(502, 'Не получилось составить план, попробуй ещё раз.');
+        return json(200, { result: { phases } });
       }
       if (task === 'workout_ai') {
         // Как в прототипе: только известные упражнения, пустые дни отбрасываются.

@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Checkin } from '@fitbay/shared';
 import type { ClDay } from '@fitbay/calc';
 import { api } from './api';
-import type { PkgReq, Slot, Tip } from './trainers';
+import type { FinOverview } from '@fitbay/calc';
+import type { PkgReq, Slot, Tip, Trainer } from './trainers';
 import { useNav } from '@/nav/store';
 
 /** Снимок клиента у тренера (GET /trainer/clients, shareSnapshot прототипа). */
@@ -52,6 +53,16 @@ export const useMySlots = () => {
   const isTrainer = useNav((s) => s.isTrainer);
   return useQuery({ queryKey: ['myslots'], enabled: isTrainer, retry: false, queryFn: () => api.call<{ items: TSlot[] }>('GET', '/trainer/slots').then((r) => r.items.sort((a, b) => a.start - b.start)) });
 };
+/** Свой профиль тренера (st.myTrainer прототипа). */
+export const useMyTrainer = () => {
+  const isTrainer = useNav((s) => s.isTrainer);
+  return useQuery({ queryKey: ['my-trainer'], enabled: isTrainer, retry: false, queryFn: () => api.call<Trainer & { partner?: boolean; code?: string }>('GET', '/trainer/profile').catch(() => null) });
+};
+/** Обзор денег (renderFin прототипа), считается на сервере через calc finOverview. */
+export const useFin = () => {
+  const isTrainer = useNav((s) => s.isTrainer);
+  return useQuery({ queryKey: ['fin'], enabled: isTrainer, retry: false, queryFn: () => api.call<FinOverview>('GET', '/trainer/overview') });
+};
 export const useTrainerReqs = () => {
   const isTrainer = useNav((s) => s.isTrainer);
   return useQuery({ queryKey: ['trainer-requests'], enabled: isTrainer, retry: false, queryFn: () => api.call<{ items: PkgReq[] }>('GET', '/trainer/requests').then((r) => r.items) });
@@ -59,7 +70,7 @@ export const useTrainerReqs = () => {
 
 export function useCabOps() {
   const qc = useQueryClient();
-  const done = () => Promise.all(['clients', 'myslots', 'trainer-requests', 'notifs'].map((k) => qc.invalidateQueries({ queryKey: [k] })));
+  const done = () => Promise.all(['clients', 'myslots', 'trainer-requests', 'notifs', 'my-trainer', 'fin', 'trainers'].map((k) => qc.invalidateQueries({ queryKey: [k] })));
   // eslint-disable-next-line react-hooks/rules-of-hooks -- вызывается безусловно и в одном порядке
   const m = <A, R = unknown>(fn: (a: A) => Promise<R>) => useMutation({ mutationFn: fn, onSuccess: done });
   const enc = encodeURIComponent;
@@ -74,6 +85,10 @@ export function useCabOps() {
     note: m(({ id, tags, note }: { id: string; tags: string[]; note: string }) => api.call('POST', `${S(id)}/note`, { tags, note })),
     plan: m(({ id, plan }: { id: string; plan: TSlot['plan'] }) => api.call('POST', `${S(id)}/plan`, { plan })),
     live: m(({ id, on }: { id: string; on: boolean }) => api.call('POST', `${S(id)}/live`, { on })),
+    answer: m(({ id, ...b }: { id: string; accept: boolean; answer: string; sessions: number }) => api.call('POST', `/trainer/requests/${enc(id)}/answer`, b)),
+    adjust: m(({ id, d }: { id: string; d: 1 | -1 }) => api.call('POST', `/trainer/requests/${enc(id)}/adjust`, { d })),
+    /** профиль целиком: сервер перезаписывает все поля карточки */
+    profile: m((b: Record<string, unknown>) => api.call('PUT', '/trainer/profile', b)),
     session: m(({ id, session }: { id: string; session: Record<string, unknown> }) => api.call('POST', `${S(id)}/session`, { session })),
   };
 }

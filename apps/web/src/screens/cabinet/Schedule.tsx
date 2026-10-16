@@ -11,8 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SingleToggle } from '@/components/ui/toggle-group';
 import { askConfirm, askReason } from '@/components/ui/confirm';
 import { usePrograms } from '@/data/hooks';
-import { useCabOps, useMySlots, type TSlot } from '@/data/cabinet';
-import { useTrainer } from '@/data/trainers';
+import { useMyTrainer, useCabOps, useMySlots, type TSlot } from '@/data/cabinet';
 import { NoteView } from '@/screens/train/WorkoutSheet';
 import { useEx } from '@/screens/train/exercises';
 import { cn } from '@/lib/utils';
@@ -433,7 +432,7 @@ function SlotForm({
   onDone: (k: string) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const { data: me } = useTrainer(null);
+  const { data: me } = useMyTrainer();
   const { data: slots = [] } = useMySlots();
   const ops = useCabOps();
   const [d, setD] = useState(day < dayKey(Date.now()) ? dayKey(Date.now()) : day);

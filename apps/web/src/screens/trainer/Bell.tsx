@@ -16,6 +16,8 @@ import {
 import { useNav, type CabView } from '@/nav/store';
 import { fmtD, fmtT } from './format';
 import { useClients } from '@/data/cabinet';
+import { usePlan } from '@/data/plan';
+import { curPhase } from '@fitbay/calc';
 import { useEx } from '@/screens/train/exercises';
 import { useTrain } from '@/screens/train/store';
 
@@ -60,6 +62,7 @@ export function useNtItems(): Nt[] {
   const { data: bk } = useMyBookings();
   const { data: clients = [] } = useClients();
   const { db } = useEx();
+  const { data: plan } = usePlan();
   const trName = (id?: string) => trainers.find((x) => x.id === id)?.name ?? t('Тренер');
   const toTrainer = (tid?: string) => () => tid && nav.open({ trainer: tid, bell: false });
   const toCab = (v: CabView) => () => (nav.open({ bell: false }), nav.setMode('clients'), nav.setCabView(v));
@@ -178,6 +181,18 @@ export function useNtItems(): Nt[] {
       text: ba.note || '',
       go: () => (nav.open({ bell: false }), nav.setProf('top')),
     });
+  // план целей от тренера: изменения и переходы фаз
+  const toPath = () => nav.open({ bell: false, path: true });
+  const cur = curPhase(plan);
+  const nowTxt = cur ? `${t('Сейчас')}: ${cur.name}` : '';
+  if (plan?.updatedAt && (plan.changes ?? []).length) {
+    const CH: Record<string, [string, string]> = { goals: ['🎯', 'изменил долгосрочные цели'], train: ['🏋️', 'изменил план тренировок'], food: ['🥗', 'изменил план питания'] };
+    for (const k of plan.changes ?? []) if (CH[k]) L.push({ ts: plan.updatedAt, bc: 'var(--orange)', bi: '★', ic: CH[k][0], title: `${plan.by || t('Тренер')}: ${t(CH[k][1])}`, text: nowTxt, go: toPath });
+  } else if (plan?.updatedAt) L.push({ ts: plan.updatedAt, bc: 'var(--orange)', bi: '★', ic: '🗺️', title: `${plan.by || t('Тренер')}: ${t('обновил твой план')}`, text: nowTxt, go: toPath });
+  for (const h of plan?.history ?? []) {
+    const p = plan?.phases?.[h.to];
+    if (p) L.push({ ts: h.at, bc: '#7BC67B', bi: '→', ic: '🗺️', title: `${t('Новая фаза')}: ${p.name}`, text: t('Предыдущая фаза завершена'), go: toPath });
+  }
   // заметки тренера к моим занятиям
   for (const x of bk?.items ?? [])
     if (x.tnote)

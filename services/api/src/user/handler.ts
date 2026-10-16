@@ -57,6 +57,8 @@ export function makeHandler(repo: Repo) {
           const now = new Date().toISOString();
           const prev = await repo.get(pk(uid), ent.sk);
           const item: Item = { ...clean(body(e)), PK: pk(uid), SK: ent.sk, createdAt: prev?.createdAt ?? now, updatedAt: now };
+          // план тренера хранит свою отметку изменения (ms), по ней колокольчик клиента и архив (plDiff прототипа)
+          if (name === 'plan' && typeof body(e).updatedAt === 'number') item.updatedAt = body(e).updatedAt as number;
           if (name === 'profile' && prev) {
             // роль и подписку меняет только сервер
             for (const k of ['role', 'entitlement']) if (k in prev) item[k] = prev[k];
